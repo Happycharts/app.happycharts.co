@@ -1,0 +1,17 @@
+environment:
+  name: Trino
+  identifier: Trino
+  orgIdentifier: default
+  projectIdentifier: Happybase
+  description: ""
+  tags: {}
+  type: PreProduction
+  yaml: |
+    environment:
+      name: ""
+      identifier: ""
+      orgIdentifier: default
+      projectIdentifier: Happybase
+      description: ""
+      tags: {}
+      type: ""
