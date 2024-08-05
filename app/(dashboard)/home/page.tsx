@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { useUser, useOrganization } from "@clerk/nextjs";
@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from '@/app/utils/supabase/client';
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
+import { Input } from '@/components/ui/input';
+import CurrencyInput from 'react-currency-input-field';
 
 type MerchantData = {
   id: string;
@@ -29,7 +31,11 @@ export default function HomePage() {
   const [isStripeConnected, setIsStripeConnected] = useState(false);
   const [merchantData, setMerchantData] = useState<MerchantData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [productName, setProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [productInterval, setProductInterval] = useState('monthly');
+  const [jdbc, setjdbc] = useState(''); // Change the default value here
+    
   const supabase = createClient();
   const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });
 
@@ -110,6 +116,44 @@ export default function HomePage() {
     return membership.role === 'org:admin' || membership.role === 'admin';
   }
 
+  const handleProductSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!productName || !productPrice || !orgId || !merchantData?.id) return;
+  
+    const productData = {
+      name: productName,
+      price: parseFloat(productPrice),
+      organization: orgId,
+      merchant: merchantData.id,
+      interval: productInterval,
+      jdbc: jdbc,
+    };
+  
+    console.log('Sending product data:', productData);
+  
+    try {
+      const response = await fetch('/api/products/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Product inserted successfully:', data);
+        setProductName('');
+        setProductPrice('');
+      } else {
+        const errorData = await response.text();
+        console.error('Error inserting product. Status:', response.status, 'Data:', errorData);
+      }
+    } catch (error) {
+      console.error('Error inserting product:', error);
+    }
+  };
+
   const SkeletonContent = () => (
     <>
       <Card className="w-full max-w-4xl mx-auto border-black border-opacity-20 rounded-lg mb-8">
@@ -187,8 +231,50 @@ export default function HomePage() {
                   </Button>
                 )}
               </li>
+              <li className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-black mb-3">2. Create a data product</h3>
+                <p className="text-black mb-4">Create a link so you can charge for access to your data product</p>
+                {isAdmin ? (
+                  <form onSubmit={handleProductSubmit} className="flex flex-col space-y-4">
+                    <Input
+                      type="text"
+                      placeholder="Product Name"
+                      value={productName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
+                    />
+                    <CurrencyInput
+                      id="product-price"
+                      name="product-price"
+                      placeholder="$5.00"
+                      defaultValue={productPrice}
+                      decimalsLimit={2}
+                      fixedDecimalLength={2}
+                      allowNegativeValue={false}
+                      prefix="$"
+                      onValueChange={(value) => setProductPrice(value || '')}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                    <select
+                      value={productInterval}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setProductInterval(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="monthly">Monthly</option>
+                      <option value="quarterly">Quarterly</option>
+                      <option value="yearly">Yearly</option>
+                    </select>
+                    <Input type="text" placeholder="JDBC URL" value={jdbc} onChange={(e: ChangeEvent<HTMLInputElement>) => setjdbc(e.target.value)} />                    <Button type="submit" variant="outline" size="sm" className="flex items-center space-x-2">
+                      <span>Create Product</span>
+                    </Button>
+                  </form>
+                ) : (
+                  <Button variant="outline" size="sm" disabled className="flex items-center space-x-2">
+                    <span>Create Product</span>
+                  </Button>
+                )}
+              </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">2. Connect your first tool</h3>
+                  <h3 className="text-xl font-semibold text-black mb-3">3. Connect your first tool</h3>
                   <p className="text-black mb-4">Connect a tool so you can start centralizing your semantic layer.</p>
                   <Button className="bg-black hover:bg-gray-800 text-white transition-colors duration-300">
                     <Link href="/apps/add">
@@ -197,7 +283,7 @@ export default function HomePage() {
                   </Button>
                 </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">3. Create a portal</h3>
+                  <h3 className="text-xl font-semibold text-black mb-3">4. Create a portal</h3>
                   <p className="text-black mb-4">Publish your tool so your partners and audience can learn about your data program</p>
                   <div className="flex items-center space-x-2">
                     <div style={{
@@ -225,7 +311,7 @@ export default function HomePage() {
                   </div>
                 </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">4. Invite your data stakeholders</h3>
+                  <h3 className="text-xl font-semibold text-black mb-3">5. Invite your data stakeholders</h3>
                   <p className="text-black mb-4">Send the link to your data access portal to your partners, researchers, and LLM developers so they can request access to your data</p>
                 </li>
               </ol>
