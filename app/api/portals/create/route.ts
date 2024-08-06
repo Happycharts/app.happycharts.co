@@ -1,26 +1,21 @@
-// File: /pages/api/broadcasts/create.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/utils/supabase/server';
 import { getAuth } from '@clerk/nextjs/server';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-08-16',
+});
 
 export async function POST(request: NextRequest) {
+  const body = await request.json();
+  console.log('Received body:', body);
   const { userId } = getAuth(request);
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, expiration, url, cubeUrl, fullName, appName } = await request.json();
-
-  if (!id || !expiration || !url) {
-    return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
-  }
-
-  // Validate expiration
-  const validExpirations = ['1 Week', '2 Weeks', '3 Weeks', '4 Weeks'];
-  if (!validExpirations.includes(expiration)) {
-    return NextResponse.json({ error: 'Invalid expiration value' }, { status: 400 });
-  }
+  const { id, url, appName, contentUrl, merchant, price, interval } = body;
 
   try {
     const supabase = createClient();
@@ -37,22 +32,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'App not found or you do not have permission' }, { status: 404 });
     }
 
-    // Calculate expiration date
-    const expirationDate = new Date();
-    switch (expiration) {
-      case '1 Week':
-        expirationDate.setDate(expirationDate.getDate() + 7);
-        break;
-      case '2 Weeks':
-        expirationDate.setDate(expirationDate.getDate() + 14);
-        break;
-      case '3 Weeks':
-        expirationDate.setDate(expirationDate.getDate() + 21);
-        break;
-      case '4 Weeks':
-        expirationDate.setDate(expirationDate.getDate() + 28);
-        break;
+    // Create Stripe product
+    const product = await stripe.products.create({
+      name: appName,
+    }, {
+      stripeAccount: merchant.id,
+    });
+    
+    type Interval = 'month' | 'year' | 'week' | 'day';
+
+    const intervalMap: {
+      monthly: Interval;
+      yearly: Interval;
+      weekly: Interval;
+      daily: Interval;
+    } = {
+      monthly: 'month',
+      yearly: 'year',
+      weekly: 'week',
+      daily: 'day',
+    };
+    
+    const validIntervals = Object.keys(intervalMap);
+    
+    if (!validIntervals.includes(interval)) {
+      return NextResponse.json({ error: 'Invalid interval' }, { status: 400 });
     }
+    
+    const stripePrice = await stripe.prices.create({
+      product: product.id,
+      unit_amount: price * 100, // Stripe expects amount in cents
+      currency: 'usd',
+      recurring: { interval: intervalMap[interval as keyof typeof intervalMap] },
+    }, {
+      stripeAccount: merchant.id,
+    });     
+
+    // Create payment link
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [
+        {
+          price: stripePrice.id,
+          quantity: 1,
+        },
+      ],
+    }, {
+      stripeAccount: merchant.id,
+    });    
 
     // Create broadcast record
     const { data: broadcast, error: broadcastError } = await supabase
@@ -60,11 +86,14 @@ export async function POST(request: NextRequest) {
       .insert({
         id: id,
         creator_id: userId,
-        expiration_date: expirationDate.toISOString(),
         url: url,
-        cube_url: cubeUrl,
-        portal_manager: fullName,
-        app: appName
+        content_url: contentUrl,
+        product_id: product.id,
+        merchant: merchant,
+        price: price,
+        interval: interval,
+        stripe_price_id: stripePrice.id,
+        payment_link: paymentLink.url,
       })
       .select()
       .single();
@@ -74,10 +103,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create broadcast' }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Broadcast created successfully', broadcast }, { status: 200 });
+    return NextResponse.json({ message: 'Broadcast created successfully', broadcast, paymentLink: paymentLink.url }, { status: 200 });
   } catch (error) {
     console.error('Error in broadcast creation:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

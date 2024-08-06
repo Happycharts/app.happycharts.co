@@ -6,16 +6,23 @@ import React, { useEffect, useState } from 'react';
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { createClerkSupabaseClient } from '@/app/utils/supabase/clerk';
 import Link from 'next/link';
-import { PlusCircle, FileBox, Trash2, AlertCircle, Copy, RadioTower } from 'lucide-react';
+import { PlusCircle, FileBox, Trash2, AlertCircle, Copy, RadioTower, ChevronsUpDownIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Toast } from '@/components/ui/toast'
 import { toast, useToast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster";
 import Stripe from 'stripe';
 import { Input } from "@/components/ui/input";
 import { AnalyticsBrowser } from '@segment/analytics-next'
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandItem, CommandDialog, CommandGroup, CommandEmpty } from "@/components/ui/command";
+import { Check } from "lucide-react";
+import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
+import { cn } from "@/app/utils/utils";
+import { Select, SelectItem, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectValue } from "@/components/ui/select";
+import { ChangeEvent } from 'react';
+import CurrencyInput from 'react-currency-input-field';
 
 type appData = {
   id: string;
@@ -41,15 +48,20 @@ export default function Apps() {
   const [isLoading, setIsLoading] = useState(true);
   const [appToDelete, setappToDelete] = useState<string | null>(null);
   const [appToBroadcast, setAppToBroadcast] = useState<string | null>(null);
-  const [expiration, setExpiration] = useState('');
   const [url, setUrl] = useState('');
-  const fullName = useUser().user?.fullName;
+  const fullName = user?.fullName;
+  const [products, setProducts] = useState<any[]>([]);
+  const [productName, setProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [productInterval, setProductInterval] = useState('monthly');
+  const [contentUrl, setContentUrl] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [openProductCombobox, setOpenProductCombobox] = React.useState(false);
   const [broadcastedApps, setBroadcastedApps] = useState<string[]>(() => {
     const saved = localStorage.getItem('broadcastedApps');
     return saved ? JSON.parse(saved) : [];
   });
-    const [cubeUrl, setCubeUrl] = useState('');
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
   });
   const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
@@ -61,22 +73,42 @@ export default function Apps() {
 
       setIsLoading(true);
       const supabase = createClerkSupabaseClient();
-      const { data, error } = await supabase
+
+      // Fetch apps
+      const { data: appsData, error: appsError } = await supabase
         .from('apps')
         .select('*')
         .eq('creator_id', user.id);
 
-      if (error) {
-        console.error(error);
-      } else {
-        if (isMounted) {
-          setApps(data || []);
-        }
+      if (appsError) {
+        console.error(appsError);
+      } else if (isMounted) {
+        setApps(appsData || []);
       }
+
       setIsLoading(false);
     };
 
+    const fetchProducts = async () => {
+      if (!organization?.id) return;
+    
+      const supabase = createClerkSupabaseClient();
+    
+      // Fetch products
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('organization', organization?.id);
+    
+      if (productsError) {
+        console.error(productsError);
+      } else {
+        setProducts(productsData);
+      }
+    };
+
     fetchApps();
+    fetchProducts();
     analytics.track('Viewed Apps', {
       userId: user?.id,
       organizationId: organization?.id,
@@ -86,7 +118,7 @@ export default function Apps() {
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [user?.id, organization?.id]);
 
   useEffect(() => {
     localStorage.setItem('broadcastedApps', JSON.stringify(broadcastedApps));
@@ -113,63 +145,78 @@ export default function Apps() {
   };
 
   const broadcastApp = async () => {
-    if (!appToBroadcast || !expiration || !url || !cubeUrl) return;
+    if (!appToBroadcast || !contentUrl || !url) return;
   
     try {
       const orgId = organization?.id;
       const email = user?.primaryEmailAddress?.emailAddress;
-
+  
       if (!orgId || !email) {
         throw new Error('Missing required fields');
       }
-      // Call the API route to create the merchant account if it doesn't exist
-      const response = await fetch('/api/merchants/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orgId, email }),
-      });
   
-      analytics.track('Broadcasted App', {
-        userId: user?.id,
-        organizationId: organization?.id,
-        fullName: fullName,
-        appName: appToBroadcast,
-        expiration: expiration,
-        url: url,
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create merchant account');
+      // Check if a merchant account exists
+      const supabase = createClerkSupabaseClient();
+      const { data: merchantData, error: merchantError } = await supabase
+        .from('merchants')
+        .select('*')
+        .eq('organization', orgId);
+  
+      if (merchantError) {
+        console.error(merchantError);
+        throw new Error('Failed to fetch merchant account');
       }
   
-      // Proceed with the broadcast app logic
+      if (!merchantData || merchantData.length === 0) {
+        throw new Error('You need to finish onboarding!');
+      }
+  
+      if (!productPrice || !productInterval || !contentUrl) {
+        throw new Error('Missing required fields');
+      }
+  
+      const app = Apps.find(app => app.id === appToBroadcast);
+      if (!app) {
+        throw new Error('App not found');
+      }
+  
+      const portalData = {
+        id: app?.id,
+        url: app?.url,
+        appName: app.name,
+        contentUrl: contentUrl,
+        merchant: merchantData[0].id,
+        price: parseFloat(productPrice),
+        interval: productInterval,
+      };
+  
       const broadcastResponse = await fetch('/api/portals/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: appToBroadcast, expiration, url, cubeUrl, fullName }),
+        body: JSON.stringify(portalData),
       });
   
       if (!broadcastResponse.ok) {
-        throw new Error('Failed to broadcast app');
+        console.error('Error creating portal:', broadcastResponse.status, broadcastResponse.statusText);
+        const errorData = await broadcastResponse.json();
+        console.error('Error data:', errorData);
+        throw new Error('Failed to create portal');
       }
   
       const data = await broadcastResponse.json();
       toast({
         title: "App broadcasted successfully!",
-        description: `Expiration: ${expiration}`,
+        description: `Product: ${app.name}`,
       });
       setAppToBroadcast(null);
-      setExpiration('');
-      setUrl('');
-      setCubeUrl('');
+      setContentUrl('');
       setBroadcastedApps([...broadcastedApps, appToBroadcast]);
     } catch (error) {
-      console.error('Error broadcasting app:', error);
+      console.error('Error creating portal:', error);
       toast({
-        title: "Failed to broadcast app",
+        title: "Failed to create portal",
         description: "Please try again later",
         variant: "destructive",
       });
@@ -224,7 +271,6 @@ export default function Apps() {
               <TableHeader>
                 <TableRow>
                   <TableHead>App</TableHead>
-                  <TableHead>Creator</TableHead>
                   <TableHead>ID</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -238,24 +284,23 @@ export default function Apps() {
                       )}
                       <span className="font-medium">{app.name}</span>
                     </TableCell>
-                    <TableCell>{app.portal_manager}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <input
                           type="text"
-                          value={app.id}
+                          value={`https://app.happybase.co/portal/${app.id}`}
                           readOnly
                           className="w-full border rounded px-2 py-1"
                         />
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button variant="outline" size="sm" onClick={() => copyToClipboard(app.id)}>
+                              <Button variant="outline" size="sm" onClick={() => copyToClipboard(`https://app.happybase.co/portal/${app.id}`)}>
                                 <Copy className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Copy ID</p>
+                              <p>Copy Link</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -309,7 +354,7 @@ export default function Apps() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Broadcast app</p>
+                            <p>Create Portal</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -323,55 +368,51 @@ export default function Apps() {
       </Card>
       <Toaster />
 
-      <Dialog open={!!appToDelete} onOpenChange={(open) => setappToDelete(open ? appToDelete : null)}>
-        <DialogContent className="bg-white">
-          <DialogHeader>
-            <DialogTitle>Are you sure you want to delete this app?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete the app and all associated data.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setappToDelete(null)}>Cancel</Button>
-            <Button onClick={deleteApp}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={!!appToBroadcast} onOpenChange={(open) => setAppToBroadcast(open ? appToBroadcast : null)}>
-    <DialogContent className="bg-white">
-      <DialogHeader>
-        <DialogTitle>Broadcast App</DialogTitle>
-        <DialogDescription>
-          Enter the expiration date and Cube URL for the broadcast.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="space-y-4">
-        <Select value={expiration} onValueChange={setExpiration}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select expiration date" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1 Week">1 Week</SelectItem>
-            <SelectItem value="2 Weeks">2 Weeks</SelectItem>
-            <SelectItem value="3 Weeks">3 Weeks</SelectItem>
-            <SelectItem value="4 Weeks">4 Weeks</SelectItem>
-          </SelectContent>
-        </Select>
-        <Input
-          type="text"
-          value={cubeUrl}
-          onChange={(e) => setCubeUrl(e.target.value)}
-          placeholder="Enter Cube URL"
-          className="w-full p-2 border rounded"
-        />
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={() => setAppToBroadcast(null)}>Cancel</Button>
-        <Button onClick={broadcastApp}>Broadcast</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
+      <DialogContent className="bg-white">
+        <DialogHeader>
+          <DialogTitle>Create a portal</DialogTitle>
+          <DialogDescription>
+            Create your portal and the terms of it's access
+          </DialogDescription>
+        </DialogHeader>
+            <Input
+              type="text"
+              placeholder="Portal Name"
+              value={productName}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
+            />
+            <CurrencyInput
+              id="product-price"
+              name="product-price"
+              placeholder="$5.00"
+              defaultValue={productPrice}
+              decimalsLimit={2}
+              fixedDecimalLength={2}
+              allowNegativeValue={false}
+              prefix="$"
+              onValueChange={(value) => setProductPrice(value || '')}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <Input type="text" placeholder="Content URL (The content want to paywall)" value={contentUrl} onChange={(e: ChangeEvent<HTMLInputElement>) => setContentUrl(e.target.value)} />
+            <Select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a billing interval" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Intervals</SelectLabel>
+                  <SelectItem value="monthly" onClick={() => setProductInterval('monthly')}>Monthly</SelectItem>
+                  <SelectItem value="quarterly" onClick={() => setProductInterval('quarterly')}>Quarterly</SelectItem>
+                  <SelectItem value="yearly" onClick={() => setProductInterval('yearly')}>Yearly</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="flex items-center space-x-2" onClick={broadcastApp}>
+              <span>Create Product and Broadcast</span>
+            </Button>
+      </DialogContent>
+    </Dialog>
     </div>
   );
 }

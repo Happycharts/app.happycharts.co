@@ -7,8 +7,6 @@ import Logo from '@/public/happybase.svg'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useUser, useOrganization } from '@clerk/nextjs';
-import { Resend } from 'resend';
-import { HappybaseInviteUserEmail } from '@/app/utils/email-templates/invite'; // Import the email template
 
 export default function BroadcastPage() {
   const [broadcast, setBroadcast] = useState(null)
@@ -18,121 +16,74 @@ export default function BroadcastPage() {
   const [url, setUrl] = useState('')
   const [inviteeEmail, setInviteeEmail] = useState(''); 
   const [inviteLink, setInviteLink] = useState(''); // New state for invite link
+  const [price, setPrice] = useState(''); // New state for price
+  const [interval, setInterval] = useState(''); // New state for interval
   const { user } = useUser();
   const params = useParams()
   const { id } = params
   const { organization } = useOrganization();
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchInviteLink = async () => {
-      if (!user?.id || !organization?.id) return;
-
-      const supabase = createClerkSupabaseClient();
-      const { data, error } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('id', organization.id);
-
-      if (error) {
-        console.error(error);
-      } else if (data && data.length > 0) {
-        if (isMounted) {
-          setInviteLink(data[0].inviteLink);
-        }
-      }
-    };
-
-    fetchInviteLink();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user?.id, organization?.id]);
-
-  useEffect(() => {
-    if (organization) {
-      setCompanyName(organization.name);
-      setCompanyLogo(organization.imageUrl);
-    }
-  }, [organization]);
-
-  const handleRequestQuote = async () => {
-    if (!inviteeEmail) {
-      alert('Please enter an email address');
-      return;
-    }
-
-    const resend = new Resend('re_Rh8CFXtP_EfbsvjFU8ikD2MpxjnGg9sBq');
-
-    const invitedByName = user?.fullName || 'User';
-    const invitedByEmail = user?.emailAddresses[0].emailAddress || 'user@example.com';
-
-    const emailContent = HappybaseInviteUserEmail({
-      name: invitedByName,
-      logo: companyLogo,
-      invitedByName,
-      invitedByEmail,
-      companyName,
-      inviteeLogo: companyLogo, // Assuming invitee logo is the same as company logo
-      inviteeEmail,
-      inviteLink, // Use the state variable here
-    });
-
-    const { data, error } = await resend.emails.send({
-      from: 'James <onboarding@happybase.co>',
-      to: [inviteeEmail],
-      subject: `You're invited to a 30-min data access consultation with ${companyName}`,
-      react: emailContent,
-    });
-
-    if (error) {
-      console.error('Error sending email:', error);
-      return;
-    }
-
-    console.log('Email sent successfully:', data);
-  };
 
   useEffect(() => {
     const fetchBroadcast = async () => {
-      if (!id) {
-        console.error('ID is not provided')
+      if (!id || !user?.id || !organization?.id) {
+        console.error('ID or user ID or organization ID is not provided')
         setLoading(false)
         return
       }
-
+  
       console.log('Fetching broadcast with ID:', id)
-
+  
       const supabase = createClerkSupabaseClient()
-      const { data, error } = await supabase
+      const { data: broadcastData, error: broadcastError } = await supabase
         .from('portals')
         .select('*')
         .eq('id', id)
         .maybeSingle()
-
-      if (error) {
-        console.error('Error fetching broadcast:', error)
+  
+      if (broadcastError) {
+        console.error('Error fetching broadcast:', broadcastError)
         setLoading(false)
         return
       }
-
-      if (!data) {
+  
+      if (!broadcastData) {
         console.error('Broadcast not found')
         setLoading(false)
         return
       }
 
-      setBroadcast(data)
-      setUrl(data.url) // Ensure that the URL is correctly set from the data
+      setBroadcast(broadcastData)
+      setUrl(broadcastData.url) // Ensure that the URL is correctly set from the data
+      setPrice(broadcastData.price) // Update the price state
+      setInterval(broadcastData.interval) // Update the interval state
+      setInviteLink(broadcastData.payment_link) // Update the invite link state
       setLoading(false)
     }
-
+  
     fetchBroadcast()
-  }, [id])
+  }, [id, user?.id, organization?.id])
+  
+  
 
   if (loading) return <div>Loading...</div>
   if (!broadcast) return <div>Broadcast not found</div>
+
+  let formattedInterval = '';
+  switch (interval) {
+    case 'monthly':
+      formattedInterval = '/mo';
+      break;
+    case 'quarterly':
+      formattedInterval = '/qtr';
+      break;
+    case 'yearly':
+      formattedInterval = '/yr';
+      break;
+    default:
+      formattedInterval = '';
+  }
+
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -174,20 +125,13 @@ export default function BroadcastPage() {
         boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
         zIndex: 1000
       }}>
-        <p style={{ marginBottom: '5px' }}>Want to query? Request an access quote</p>
-        <Input
-          type="email"
-          placeholder="Enter your email"
-          value={inviteeEmail}
-          onChange={(e) => setInviteeEmail(e.target.value)}
-          style={{ marginBottom: '10px', width: '300px' }}
-        />
-        <Button
-          style={{ width: '300px', background: 'black', padding: '5px', color: 'white' }}
-          onClick={handleRequestQuote}
-        >
-          Request an access quote
-        </Button>
+        <p style={{ marginBottom: '5px' }}>Want access? Sign up now for ${price}{formattedInterval}</p>
+        <a href={inviteLink} target="_blank" rel="noopener noreferrer">
+          <Button className="flex w-full bg-black items-center space-x-2">
+            <img src="https://cdn.iconscout.com/icon/free/png-256/free-stripe-s-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-brand-vol-6-pack-logos-icons-3030363.png" className="h-4 w-4" />
+            <span className='text-white hover:text-black'>Pay with Stripe</span>
+          </Button>
+        </a>
       </div>
     </div>
   )

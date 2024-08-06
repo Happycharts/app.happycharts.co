@@ -34,8 +34,8 @@ export default function HomePage() {
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productInterval, setProductInterval] = useState('monthly');
-  const [jdbc, setjdbc] = useState(''); // Change the default value here
-    
+  const [contentUrl, setContentUrl] = useState(''); // Change the default value here
+
   const supabase = createClient();
   const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });
 
@@ -122,11 +122,11 @@ export default function HomePage() {
   
     const productData = {
       name: productName,
-      price: parseFloat(productPrice),
+      price: parseFloat(productPrice), // This will convert the string to a float
       organization: orgId,
       merchant: merchantData.id,
       interval: productInterval,
-      jdbc: jdbc,
+      private_url: contentUrl,
     };
   
     console.log('Sending product data:', productData);
@@ -205,7 +205,7 @@ export default function HomePage() {
           {/* New Walkthrough Card */}
           <Card className="w-full max-w-4xl mx-auto shadow-lg border-black border-opacity-20 rounded-lg mt-8">
             <CardContent className="p-8">
-              <h2 className="text-4xl font-bold text-black mb-6 text-left">Welcome to Happybase!</h2>
+              <h2 className="text-4xl font-bold text-black mb-6 text-left">Welcome to Happy Paywall!</h2>
               <h2 className="text-2xl font-bold text-black mb-6 text-left">Getting Started</h2>
               <p className="text-lg text-black mb-6 text-left">Follow these steps to get set up and start using our platform effectively.</p>
               <ol className="space-y-6">
@@ -232,8 +232,8 @@ export default function HomePage() {
                 )}
               </li>
               <li className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-black mb-3">2. Create a data product</h3>
-                <p className="text-black mb-4">Create a link so you can charge for access to your data product</p>
+                <h3 className="text-xl font-semibold text-black mb-3">2. Create a product</h3>
+                <p className="text-black mb-4">Create a product so you can start accepting payments</p>
                 {isAdmin ? (
                   <form onSubmit={handleProductSubmit} className="flex flex-col space-y-4">
                     <Input
@@ -263,7 +263,7 @@ export default function HomePage() {
                       <option value="quarterly">Quarterly</option>
                       <option value="yearly">Yearly</option>
                     </select>
-                    <Input type="text" placeholder="JDBC URL" value={jdbc} onChange={(e: ChangeEvent<HTMLInputElement>) => setjdbc(e.target.value)} />                    <Button type="submit" variant="outline" size="sm" className="flex items-center space-x-2">
+                    <Input type="text" placeholder="Private URL (The content want to paywall)" value={contentUrl} onChange={(e: ChangeEvent<HTMLInputElement>) => setContentUrl(e.target.value)} />                    <Button type="submit" variant="outline" size="sm" className="flex items-center space-x-2">
                       <span>Create Product</span>
                     </Button>
                   </form>
@@ -274,17 +274,8 @@ export default function HomePage() {
                 )}
               </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">3. Connect your first tool</h3>
-                  <p className="text-black mb-4">Connect a tool so you can start centralizing your semantic layer.</p>
-                  <Button className="bg-black hover:bg-gray-800 text-white transition-colors duration-300">
-                    <Link href="/apps/add">
-                      Add a tool
-                    </Link>
-                  </Button>
-                </li>
-                <li className="bg-gray-50 p-6 rounded-lg">
                   <h3 className="text-xl font-semibold text-black mb-3">4. Create a portal</h3>
-                  <p className="text-black mb-4">Publish your tool so your partners and audience can learn about your data program</p>
+                  <p className="text-black mb-4">Use over 40+ tools or even custom resources to power your portal</p>
                   <div className="flex items-center space-x-2">
                     <div style={{
                       position: 'relative',
@@ -311,8 +302,8 @@ export default function HomePage() {
                   </div>
                 </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">5. Invite your data stakeholders</h3>
-                  <p className="text-black mb-4">Send the link to your data access portal to your partners, researchers, and LLM developers so they can request access to your data</p>
+                  <h3 className="text-xl font-semibold text-black mb-3">5. Share your portal link</h3>
+                  <p className="text-black mb-4">Start sharing your portal with your audience so you get paid!</p>
                 </li>
               </ol>
             </CardContent>

@@ -19,6 +19,10 @@ const allowedRoutes = [
   '/query',
   '/auth',
   '/api/(.*)',
+  '/api/apps',
+  '/api/connect_links',
+  '/api/products',
+  '/api/portals/create',
   '/api/connect_links/generate',
   '/portals',
   '/api/webhooks(.*)',
@@ -82,11 +86,11 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     try {
-      const user = await clerkClient.users.getUser(userId);
+      const user = await clerkClient().users.getUser(userId);
       const orgId = user.publicMetadata.organization_id as string;
 
       if (orgId) {
-        const organization = await clerkClient.organizations.getOrganization({ organizationId: orgId });
+        const organization = await clerkClient().organizations.getOrganization({ organizationId: orgId });
         const publicMetadata = organization.publicMetadata as { status?: string };
 
         if (publicMetadata.status === "suspended") {

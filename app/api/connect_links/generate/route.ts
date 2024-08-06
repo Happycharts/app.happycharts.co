@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const supabase = createClient();
 
     // Get the user's email
-    const user = await clerkClient.users.getUser(userId);
+    const user = await clerkClient().users.getUser(userId);
     const email = user.emailAddresses[0].emailAddress;
     console.log('User email:', email);
 
