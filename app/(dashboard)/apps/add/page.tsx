@@ -39,9 +39,19 @@ const apps = [
     iconSrc: "https://asset.brandfetch.io/idAnDTFapY/idFdbEywEz.svg"
   },
   {
-    name: "Custom App",
-    description: "Paywall (almost) any app with just the URL",
-    iconSrc: "https://cdn-icons-png.flaticon.com/512/487/487622.png"
+    name: "Cal.com",
+    description: "Paywall your Cal.com Calendar",
+    iconSrc: "https://asset.brandfetch.io/idK1CiIFAV/ide-zRSldu.svg"
+  },
+  {
+    name: "Clay",
+    description: "Paywall your Clay template",
+    iconSrc: "https://asset.brandfetch.io/idBx-psh22/idTacOVK3f.png"
+  },
+  {
+    name: "Folk",
+    description: "Paywall your Folk CRM view",
+    iconSrc: "https://asset.brandfetch.io/idyOzfVzQG/id3s40qjnH.svg"
   },
 ]
 
@@ -55,36 +65,71 @@ export default function AppsPage() {
     const org = useOrganization().organization?.id;
     const userName = useUser().user?.fullName;
 
+    const domainMap = {
+      'Coda': 'coda.io',
+      'Hex': 'hex.tech',
+      'Figma': 'figma.com',
+      'Obsidian': 'obsidian.md',
+      'Miro': 'miro.com',
+      'Cal.com': 'cal.com',
+      'Clay': 'clay.com',
+      'Folk': 'folk.app',
+      'Observable': 'observablehq.com'
+    };
+    
+    const isValidUrl = (url: string, appName: string) => {
+      try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.hostname.endsWith(domainMap[appName as keyof typeof domainMap]);
+      } catch {
+        return false;
+      }
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, appName: string) => {
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
       const url = formData.get('sharing-url')?.toString() || '';
-
+    
+      if (!isValidUrl(url, appName)) {
+        toast({
+          title: 'Invalid URL',
+          description: `Please enter a valid ${appName} URL.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    
       try {
         const response = await fetch('/api/apps/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ appName, url, userName, }),
+          body: JSON.stringify({ appName, url, userName }),
         });
-
+    
         if (!response.ok) {
           throw new Error('Failed to add app');
         }
-
+    
         toast({
           title: 'App Added',
           description: `${appName} has been added successfully.`,
         });
-
+    
         setOpenDialogs(prev => ({ ...prev, [appName]: false }));
       } catch (error) {
         console.error(error);
+        toast({
+          title: 'Error',
+          description: 'Failed to add app. Please try again.',
+          variant: 'destructive',
+        });
       }
     };
 
     return (
       <div className="container mx-auto pl-5 py-10">
-        <h1 className="text-2xl font-bold mb-6">Add a Data App</h1>
+        <h1 className="text-2xl font-bold mb-6">Add an application</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-5">
           {apps.map((app) => (
             <Dialog
@@ -116,41 +161,77 @@ export default function AppsPage() {
                   {/* Render form based on app.name */}
                   {/* Example for Hex: */}
                   {app.name === 'Hex' && (
-                    <form onSubmit={(e) => handleSubmit(e, app.name)}>
-                      <p>Fill out your connection details to begin querying your data</p>
-                      <div className="space-y-4 mt-4">
-                        <Input name="sharing-url" placeholder="Your sharable Hex URL" />
-                      </div>
-                      <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
-                    </form>
-                  )}
-                  {app.name === 'Observable' && (
-                    <form onSubmit={(e) => handleSubmit(e, app.name)}>
-                      <p>Fill out your connection details to begin querying your data</p>
-                      <div className="space-y-4 mt-4">
-                        <Input name="sharing-url" placeholder="Your sharable Observable URL" />
-                      </div>
-                      <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
-                    </form>
-                  )}
-                    {app.name === 'Notion' && (
-                    <form onSubmit={(e) => handleSubmit(e, app.name)}>
-                      <p>Fill out your connection details to begin querying your data</p>
-                      <div className="space-y-4 mt-4">
-                        <Input name="sharing-url" placeholder="Your sharable Notion URL" />
-                      </div>
-                      <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
-                    </form>
-                  )}
-                    {app.name === 'Coda' && (
-                    <form onSubmit={(e) => handleSubmit(e, app.name)}>
-                      <p>Fill out your connection details to begin querying your data</p>
-                      <div className="space-y-4 mt-4">
-                        <Input name="sharing-url" placeholder="Your sharable Coda URL" />
-                      </div>
-                      <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
-                    </form>
-                  )}
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Hex URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Coda' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Coda URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Figma' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Figma URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Obsidian' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Obsidian Publish URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Miro' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Miro workspace URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Cal.com' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Cal.com Calendar URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Clay' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Clay template URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
+                {app.name === 'Folk' && (
+                  <form onSubmit={(e) => handleSubmit(e, app.name)}>
+                    <p>Fill out your connection details to begin querying your data</p>
+                    <div className="space-y-4 mt-4">
+                      <Input name="sharing-url" placeholder="Your sharable Folk CRM view URL" />
+                    </div>
+                    <Button type="submit" className="w-full bg-black mt-4">Connect</Button>
+                  </form>
+                )}
                 </DialogDescription>
               </DialogContent>
             </Dialog>
