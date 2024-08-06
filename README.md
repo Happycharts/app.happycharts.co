@@ -3,9 +3,8 @@
 
 *"Happybase stands firmly with the people of Occupied Palestine, as we have from the beginning. We are a community of technologists, designers, and developers who are committed to using our skills and talents to create a better world for all. 🇵🇸🇵🇸🇵🇸"*
 
-![localhost_3000_home](https://github.com/user-attachments/assets/7f8540c7-47da-4c02-90fa-0519cf909c6d)
+https://github.com/user-attachments/assets/03f02a65-22cc-4b99-883a-acc49651db91
 
-> In a landscape where data is the new oil, we wanted to build a platform that creates the refinery to extract value from data. - James
 
 Welcome to Happybase, the fair-source universal paywall that allows you to gate your knowledge, calendars, CRM, or almost anything else, and then sell access to your audience.
 
