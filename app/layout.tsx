@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignOutUrl={"https://www.happybase.co"} publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider afterSignOutUrl={"https://www.happybase.co"}>
     <html lang="en">
       <body className={inter.variable}>
       <Theme>

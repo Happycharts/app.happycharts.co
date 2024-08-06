@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { clerkClient } from '@clerk/nextjs/server';
 import { Analytics } from '@segment/analytics-node'
 const analytics = new Analytics({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
+import { Resend } from 'resend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
@@ -65,13 +66,38 @@ export async function POST(request: Request) {
 
     case 'payment_intent.succeeded':
       console.log('PaymentIntent was successful!');
+      account = event.data.object as Stripe.Account;
       // Handle successful payment intent
+      analytics.track(
+        {
+          userId: account.id,
+          event: 'Payment Intent Succeeded',
+          properties: {
+            email: account.email,
+            name: account.company,
+            createdAt: account.created,
+          },
+        }
+      )
       break;
 
     case 'payout.failed':
       const invoice = event.data.object as Stripe.Invoice;
       console.log('Invoice was paid!');
       // Handle paid invoice
+      account = event.data.object as Stripe.Account;
+      // Handle successful payment intent
+      analytics.track(
+        {
+          userId: account.id,
+          event: 'Payment Intent Succeeded',
+          properties: {
+            email: account.email,
+            name: account.company,
+            createdAt: account.created,
+          },
+        }
+      )
       break;
 
     case 'account.application.deauthorized':

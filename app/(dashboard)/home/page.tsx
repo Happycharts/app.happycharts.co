@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { useUser, useOrganization } from "@clerk/nextjs";
@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from '@/app/utils/supabase/client';
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
+import { Input } from '@/components/ui/input';
+import CurrencyInput from 'react-currency-input-field';
 
 type MerchantData = {
   id: string;
@@ -29,6 +31,10 @@ export default function HomePage() {
   const [isStripeConnected, setIsStripeConnected] = useState(false);
   const [merchantData, setMerchantData] = useState<MerchantData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [productName, setProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [productInterval, setProductInterval] = useState('monthly');
+  const [contentUrl, setContentUrl] = useState(''); // Change the default value here
 
   const supabase = createClient();
   const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });
@@ -110,6 +116,44 @@ export default function HomePage() {
     return membership.role === 'org:admin' || membership.role === 'admin';
   }
 
+  const handleProductSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!productName || !productPrice || !orgId || !merchantData?.id) return;
+  
+    const productData = {
+      name: productName,
+      price: parseFloat(productPrice), // This will convert the string to a float
+      organization: orgId,
+      merchant: merchantData.id,
+      interval: productInterval,
+      private_url: contentUrl,
+    };
+  
+    console.log('Sending product data:', productData);
+  
+    try {
+      const response = await fetch('/api/products/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Product inserted successfully:', data);
+        setProductName('');
+        setProductPrice('');
+      } else {
+        const errorData = await response.text();
+        console.error('Error inserting product. Status:', response.status, 'Data:', errorData);
+      }
+    } catch (error) {
+      console.error('Error inserting product:', error);
+    }
+  };
+
   const SkeletonContent = () => (
     <>
       <Card className="w-full max-w-4xl mx-auto border-black border-opacity-20 rounded-lg mb-8">
@@ -167,7 +211,7 @@ export default function HomePage() {
               <ol className="space-y-6">
               <li className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold text-black mb-3">1. Connect with Stripe</h3>
-                <p className="text-black mb-4">Connect a Stripe account so you can start setting rates for your data access</p>
+                <p className="text-black mb-4">Connect a Stripe account so you can start setting rates for your creations</p>
                 {isAdmin ? (
                   <Link href={merchantData?.onboarding_link || '#'}>
                     <Button
@@ -188,17 +232,8 @@ export default function HomePage() {
                 )}
               </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">2. Connect your first tool</h3>
-                  <p className="text-black mb-4">Connect a tool so you can start centralizing your semantic layer.</p>
-                  <Button className="bg-black hover:bg-gray-800 text-white transition-colors duration-300">
-                    <Link href="/apps/add">
-                      Add a tool
-                    </Link>
-                  </Button>
-                </li>
-                <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">3. Create a portal</h3>
-                  <p className="text-black mb-4">Publish your tool so your partners and audience can learn about your data program</p>
+                  <h3 className="text-xl font-semibold text-black mb-3">2. Create a portal</h3>
+                  <p className="text-black mb-4">Use over 40+ tools or even custom resources to power your portal</p>
                   <div className="flex items-center space-x-2">
                     <div style={{
                       position: 'relative',
@@ -225,8 +260,8 @@ export default function HomePage() {
                   </div>
                 </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">4. Invite your data stakeholders</h3>
-                  <p className="text-black mb-4">Send the link to your data access portal to your partners, researchers, and LLM developers so they can request access to your data</p>
+                  <h3 className="text-xl font-semibold text-black mb-3">5. Share your portal link</h3>
+                  <p className="text-black mb-4">Start sharing your portal with your audience so you get paid!</p>
                 </li>
               </ol>
             </CardContent>

@@ -15,13 +15,14 @@ export default function BroadcastPage() {
   const [companyLogo, setCompanyLogo] = useState('');
   const [url, setUrl] = useState('')
   const [inviteeEmail, setInviteeEmail] = useState(''); 
-  const [inviteLink, setInviteLink] = useState('');
-  const [price, setPrice] = useState('');
-  const [interval, setInterval] = useState('');
+  const [inviteLink, setInviteLink] = useState(''); // New state for invite link
+  const [price, setPrice] = useState(''); // New state for price
+  const [interval, setInterval] = useState(''); // New state for interval
   const { user } = useUser();
   const params = useParams()
   const { id } = params
   const { organization } = useOrganization();
+
 
   useEffect(() => {
     const fetchBroadcast = async () => {
@@ -53,15 +54,17 @@ export default function BroadcastPage() {
       }
 
       setBroadcast(broadcastData)
-      setUrl(broadcastData.url)
-      setPrice(broadcastData.price)
-      setInterval(broadcastData.interval)
-      setInviteLink(broadcastData.payment_link)
+      setUrl(broadcastData.url) // Ensure that the URL is correctly set from the data
+      setPrice(broadcastData.price) // Update the price state
+      setInterval(broadcastData.interval) // Update the interval state
+      setInviteLink(broadcastData.payment_link) // Update the invite link state
       setLoading(false)
     }
   
     fetchBroadcast()
   }, [id, user?.id, organization?.id])
+  
+  
 
   if (loading) return <div>Loading...</div>
   if (!broadcast) return <div>Broadcast not found</div>
@@ -81,6 +84,7 @@ export default function BroadcastPage() {
       formattedInterval = '';
   }
 
+
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
       {url ? (
@@ -92,32 +96,6 @@ export default function BroadcastPage() {
       ) : (
         <p>App URL not found</p>
       )}
-
-      {/* Paywall overlay */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '20px',
-        zIndex: 999,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
-      }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '20px', fontWeight: 'bold' }}>Subscribe to Access Content</h2>
-        <p style={{ fontSize: '18px', marginBottom: '20px' }}>Sign up now for ${price}{formattedInterval}</p>
-        <a href={inviteLink} target="_blank" rel="noopener noreferrer" style={{ width: '200px' }}>
-          <Button className="flex w-full hover:border border text-white hover:text-black bg-black items-center space-x-2">
-            <img src="https://cdn.iconscout.com/icon/free/png-256/free-stripe-s-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-brand-vol-6-pack-logos-icons-3030363.png" className="h-4 mr-1 w-4" alt="Stripe logo" />
-            Pay with Stripe
-          </Button>
-        </a>
-      </div>
 
       {/* Powered by Happybase widget */}
       <div style={{
@@ -132,9 +110,29 @@ export default function BroadcastPage() {
         alignItems: 'center',
         zIndex: 1000
       }}>
-        <span className='mr-2'>Powered by Happybase</span>
+        <span className='mr-2'>Powered by Happy Paywall</span>
         <Logo />
       </div>
+
+      {/* Hovering link input */}
+      {/* <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        backgroundColor: 'white',
+        padding: '10px',
+        borderRadius: '5px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+        zIndex: 1000
+      }}>
+        <p style={{ marginBottom: '5px' }}>Want access? Sign up now for ${price}{formattedInterval}</p>
+        <a href={inviteLink} target="_blank" rel="noopener noreferrer">
+          <Button className="flex w-full bg-black items-center space-x-2">
+            <img src="https://cdn.iconscout.com/icon/free/png-256/free-stripe-s-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-brand-vol-6-pack-logos-icons-3030363.png" className="h-4 w-4" />
+            <span className='text-white hover:text-black'>Pay with Stripe</span>
+          </Button>
+        </a>
+      </div> */}
     </div>
   )
 }
