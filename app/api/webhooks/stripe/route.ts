@@ -51,9 +51,10 @@ export async function POST(request: Request) {
             emailAddress: [customerEmail],
             firstName: customerName?.split(' ')[0] || '',
             lastName: customerName?.split(' ').slice(1).join(' ') || '',
-            password: Math.random().toString(36).slice(-8), // Generate a random password
             publicMetadata: {
               checkoutSessionId: session.id,
+              stripeCustomerId: session.customer as string,
+              customerEmail: customerEmail,
             },
             skipPasswordChecks: true,
             skipPasswordRequirement: true,
