@@ -35,10 +35,45 @@ export async function POST(request: Request) {
     break
     case 'customer.updated':
       break;
-    case 'payment_intent.succeeded':
-      console.log('PaymentIntent was successful!');
-      // Handle successful payment intent
-      break;
+    case 'checkout.session.completed':
+        console.log('Checkout session was completed!');
+        const session = event.data.object as Stripe.Checkout.Session;
+        console.log('Checkout Session:', session);
+        
+        const customerEmail = session.customer_details?.email;
+        console.log('Customer email from session:', customerEmail);
+        
+        if (customerEmail) {
+          try {
+            // Create a Clerk invitation
+            const invitation = await clerkClient.invitations.createInvitation({
+              emailAddress: customerEmail,
+              redirectUrl: '/auth/create-organization',
+              publicMetadata: {
+                checkoutSessionId: session.id,
+              },
+            });
+
+            console.log('Invitation sent:', invitation);
+
+            // Track the event in Segment
+            analytics.track({
+              userId: session.id,
+              event: 'Invitation Sent',
+              properties: {
+                customerEmail: customerEmail,
+                checkoutSessionId: session.id,
+                invitationId: invitation.id,
+              },
+            });
+
+          } catch (error) {
+            console.error('Error sending invitation:', error);
+          }
+        } else {
+          console.log('Customer email not found in checkout session');
+        }
+        break;
     case 'invoice.paid':
       const invoice = event.data.object as Stripe.Invoice;
       console.log('Invoice was paid!');
