@@ -219,7 +219,7 @@ export default function HomePage() {
                     size="sm"
                     className="flex items-center space-x-2"
                   >
-                    <img src="https://asset.brandfetch.io/idIq_kF0rb/idv3zwmSiY.jpeg" className="h-4 w-4" />
+                    <img src="https://asset.brandfetch.io/id6Zq084G_/idNMPUs75U.svg" className="h-4 w-4" />
                     <span>Chat on WhatsApp</span>
                   </Button>
                 </Link>
