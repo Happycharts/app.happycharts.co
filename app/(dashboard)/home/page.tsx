@@ -211,7 +211,21 @@ export default function HomePage() {
               <p className="text-lg text-black mb-6 text-left">Follow these steps to get set up and start using our platform effectively.</p>
               <ol className="space-y-6">
               <li className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-black mb-3">1. Connect with Stripe</h3>
+                <h3 className="text-xl font-semibold text-black mb-3">1. Get Support</h3>
+                <p className="text-black mb-4">Get in touch with our team to help you get started</p>
+                <Link href="https://wa.me/18657763192">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    <img src="https://asset.brandfetch.io/idIq_kF0rb/idv3zwmSiY.jpeg" className="h-4 w-4" />
+                    <span>Chat on WhatsApp</span>
+                  </Button>
+                </Link>
+              </li>
+              <li className="bg-gray-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-black mb-3">2. Connect with Stripe</h3>
                 <p className="text-black mb-4">Connect a Stripe account so you can start setting rates for your creations</p>
                 {isAdmin ? (
                   <Link href={merchantData?.onboarding_link || '#'}>
@@ -233,7 +247,7 @@ export default function HomePage() {
                 )}
               </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">2. Create a portal</h3>
+                  <h3 className="text-xl font-semibold text-black mb-3">3. Create a portal</h3>
                   <p className="text-black mb-4">Use over 40+ tools or even custom resources to power your portal</p>
                   <div className="flex items-center space-x-2">
                     <div style={{
@@ -261,7 +275,7 @@ export default function HomePage() {
                   </div>
                 </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">5. Share your portal link</h3>
+                  <h3 className="text-xl font-semibold text-black mb-3">4. Share your portal link</h3>
                   <p className="text-black mb-4">Start sharing your portal with your audience so you can get paid!</p>
                 </li>
               </ol>
