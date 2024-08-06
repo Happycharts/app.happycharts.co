@@ -36,44 +36,51 @@ export async function POST(request: Request) {
     case 'customer.updated':
       break;
     case 'checkout.session.completed':
-        console.log('Checkout session was completed!');
-        const session = event.data.object as Stripe.Checkout.Session;
-        console.log('Checkout Session:', session);
-        
-        const customerEmail = session.customer_details?.email;
-        console.log('Customer email from session:', customerEmail);
-        
-        if (customerEmail) {
-          try {
-            // Create a Clerk invitation
-            const invitation = await clerkClient.invitations.createInvitation({
-              emailAddress: customerEmail,
-              redirectUrl: '/auth/create-organization',
-              publicMetadata: {
-                checkoutSessionId: session.id,
-              },
-            });
+      console.log('Checkout session was completed!');
+      const session = event.data.object as Stripe.Checkout.Session;
+      console.log('Checkout Session:', session);
+      
+      const customerEmail = session.customer_details?.email;
+      const customerName = session.customer_details?.name;
+      console.log('Customer email from session:', customerEmail);
+      
+      if (customerEmail) {
+        try {
+          // Create a new user using Clerk Backend API
+          const newUser = await clerkClient.users.createUser({
+            emailAddress: [customerEmail],
+            firstName: customerName?.split(' ')[0] || '',
+            lastName: customerName?.split(' ').slice(1).join(' ') || '',
+            publicMetadata: {
+              checkoutSessionId: session.id,
+              stripeCustomerId: session.customer as string,
+              customerEmail: customerEmail,
+            },
+            skipPasswordChecks: true,
+            skipPasswordRequirement: true,
+          });
 
-            console.log('Invitation sent:', invitation);
+          console.log('New user created:', newUser);
 
-            // Track the event in Segment
-            analytics.track({
-              userId: session.id,
-              event: 'Invitation Sent',
-              properties: {
-                customerEmail: customerEmail,
-                checkoutSessionId: session.id,
-                invitationId: invitation.id,
-              },
-            });
+          // Track the event in Segment
+          analytics.track({
+            userId: newUser.id,
+            event: 'User Created',
+            properties: {
+              customerEmail: customerEmail,
+              checkoutSessionId: session.id,
+              userId: newUser.id,
+            },
+          });
 
-          } catch (error) {
-            console.error('Error sending invitation:', error);
-          }
-        } else {
-          console.log('Customer email not found in checkout session');
+        } catch (error) {
+          console.error('Error creating user:', error);
         }
-        break;
+      } else {
+        console.log('Customer email not found in checkout session');
+      }
+      break;
+
     case 'invoice.paid':
       const invoice = event.data.object as Stripe.Invoice;
       console.log('Invoice was paid!');
