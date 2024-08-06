@@ -33,12 +33,17 @@ type appData = {
 };
 
 const appLogos = {
+  "Coda": "https://upload.wikimedia.org/wikipedia/en/3/3f/Coda_%28document_editor%29_logo.png",
   "Hex": "https://cdn.prod.website-files.com/5d1126db676120bb4fe43762/63fd16cde55f78843fae69d8_e4184b933d3022409dd3d63191e1b123f2618cd9-250x251.png",
+  "Figma": "https://asset.brandfetch.io/idZHcZ_i7F/idbeZ1Yw2c.svg",
+  "Obsidian": "https://asset.brandfetch.io/idGpyxH_Fa/idjJkC-FjU.svg",
+  "Miro": "https://asset.brandfetch.io/idAnDTFapY/idFdbEywEz.svg",
+  "Cal.com": "https://asset.brandfetch.io/idK1CiIFAV/ide-zRSldu.svg",
+  "Clay": "https://asset.brandfetch.io/idBx-psh22/idTacOVK3f.png",
+  "Folk": "https://asset.brandfetch.io/idyOzfVzQG/id3s40qjnH.svg",
   "Notion": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/2048px-Notion-logo.svg.png",
   "Observable": "https://avatars.githubusercontent.com/u/30080011?s=280&v=4",
-  "Coda": "https://upload.wikimedia.org/wikipedia/en/3/3f/Coda_%28document_editor%29_logo.png",
   "Deepnote": "https://cdn-images-1.medium.com/max/1200/1*Geecfuc_bb_Fa3i4zWnsjQ.png",
-  "Custom App": "https://cdn-icons-png.flaticon.com/512/487/487622.png"
 };
 
 export default function Apps() {

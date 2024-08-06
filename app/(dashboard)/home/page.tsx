@@ -43,55 +43,57 @@ export default function HomePage() {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {
       if (!user?.user?.id || !organization?.id) return;
-
+  
       setIsLoading(true);
-
+  
       const adminStatus = checkIfUserIsAdmin();
       if (isMounted) {
         setIsAdmin(adminStatus);
       }
-
+  
       // Fetch existing merchant data
       const { data: existingMerchant, error: merchantError } = await supabase
         .from('merchants')
         .select('*')
         .eq('organization', organization.id)
         .single();
-
+  
       if (merchantError && merchantError.code !== 'PGRST116') {
         console.error("Error fetching merchant data:", merchantError);
       } else if (!existingMerchant) {
         // If no merchant exists and user is admin, create one
-        try {
-          const response = await fetch('/api/connect_links/generate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              first_name: user.user?.firstName,
-              last_name: user.user?.lastName,
-              email: user.user?.primaryEmailAddress?.emailAddress,
-              organization: organization.id,
-              created_by: user.user?.id,
-            }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (isMounted) {
-              setMerchantData({
-                id: data.id,
+        if (adminStatus) {
+          try {
+            const response = await fetch('/api/connect_links/generate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                first_name: user.user?.firstName,
+                last_name: user.user?.lastName,
+                email: user.user?.primaryEmailAddress?.emailAddress,
                 organization: organization.id,
-                onboarding_link: data.url,
-              });
-              setIsStripeConnected(true);
+                created_by: user.user?.id,
+              }),
+            });
+  
+            if (response.ok) {
+              const data = await response.json();
+              if (isMounted) {
+                setMerchantData({
+                  id: data.id,
+                  organization: organization.id,
+                  onboarding_link: data.url,
+                });
+                setIsStripeConnected(true);
+              }
+            } else {
+              console.error('Error creating merchant:', await response.json());
             }
-          } else {
-            console.error('Error creating merchant:', await response.json());
+          } catch (error) {
+            console.error('Error creating merchant:', error);
           }
-        } catch (error) {
-          console.error('Error creating merchant:', error);
         }
       } else if (existingMerchant) {
         if (isMounted) {
@@ -99,12 +101,12 @@ export default function HomePage() {
           setIsStripeConnected(!!existingMerchant.onboarding_link);
         }
       }
-
+  
       setIsLoading(false);
     };
-
+  
     fetchDataAndCheckAdmin();
-
+  
     return () => {
       isMounted = false;
     };
