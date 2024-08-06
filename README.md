@@ -1,9 +1,9 @@
-## 😜 Happybase:  Endlessly flexible access portals for commercializing your data 
+## 😜 Happybase: Endlessly flexible paywall for indie makers and ceiling breakers 
+
 ![Happybase](./public/banner.png)
 
 *"Happybase stands firmly with the people of Occupied Palestine, as we have from the beginning. We are a community of technologists, designers, and developers who are committed to using our skills and talents to create a better world for all. 🇵🇸🇵🇸🇵🇸"*
 
-https://github.com/user-attachments/assets/03f02a65-22cc-4b99-883a-acc49651db91
 
 
 Welcome to Happybase, the fair-source universal paywall that allows you to gate your knowledge, calendars, CRM, or almost anything else, and then sell access to your audience.
