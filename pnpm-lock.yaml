@@ -320,6 +320,9 @@ dependencies:
   novel:
     specifier: ^0.4.3
     version: 0.4.3(@tiptap/extension-code-block@2.5.8)(@types/react@18.3.3)(react-dom@18.3.1)(react@18.3.1)
+  onborda:
+    specifier: ^1.2.2
+    version: 1.2.2(framer-motion@11.3.8)(next@14.2.4)(react-dom@18.3.1)(react@18.3.1)
   pg:
     specifier: ^8.12.0
     version: 8.12.0
@@ -14806,6 +14809,20 @@ packages:
     engines: {node: '>= 0.8'}
     dependencies:
       ee-first: 1.1.1
+    dev: false
+
+  /onborda@1.2.2(framer-motion@11.3.8)(next@14.2.4)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-0TMg1d/i13jB0/1OQR0UCe9jqYBTt+9FYUz2ec8aEKDncPGC6y0hlfhrWkfrw/eDrtfPby+XH4gVCiqL2mDJ/Q==}
+    peerDependencies:
+      framer-motion: '>=11'
+      next: '>=13'
+      react: '>=18'
+      react-dom: '>=18'
+    dependencies:
+      framer-motion: 11.3.8(react-dom@18.3.1)(react@18.3.1)
+      next: 14.2.4(@babel/core@7.24.9)(@opentelemetry/api@1.9.0)(react-dom@18.3.1)(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
     dev: false
 
   /once@1.4.0:
