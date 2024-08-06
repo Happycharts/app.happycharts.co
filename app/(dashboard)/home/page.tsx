@@ -205,13 +205,13 @@ export default function HomePage() {
           {/* New Walkthrough Card */}
           <Card className="w-full max-w-4xl mx-auto shadow-lg border-black border-opacity-20 rounded-lg mt-8">
             <CardContent className="p-8">
-              <h2 className="text-4xl font-bold text-black mb-6 text-left">Welcome to Happy Paywall!</h2>
+              <h2 className="text-4xl font-bold text-black mb-6 text-left">Welcome to Happybase!</h2>
               <h2 className="text-2xl font-bold text-black mb-6 text-left">Getting Started</h2>
               <p className="text-lg text-black mb-6 text-left">Follow these steps to get set up and start using our platform effectively.</p>
               <ol className="space-y-6">
               <li className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold text-black mb-3">1. Connect with Stripe</h3>
-                <p className="text-black mb-4">Connect a Stripe account so you can start setting rates for your data access</p>
+                <p className="text-black mb-4">Connect a Stripe account so you can start setting rates for your creations</p>
                 {isAdmin ? (
                   <Link href={merchantData?.onboarding_link || '#'}>
                     <Button
@@ -231,50 +231,8 @@ export default function HomePage() {
                   </Button>
                 )}
               </li>
-              <li className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-black mb-3">2. Create a product</h3>
-                <p className="text-black mb-4">Create a product so you can start accepting payments</p>
-                {isAdmin ? (
-                  <form onSubmit={handleProductSubmit} className="flex flex-col space-y-4">
-                    <Input
-                      type="text"
-                      placeholder="Product Name"
-                      value={productName}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
-                    />
-                    <CurrencyInput
-                      id="product-price"
-                      name="product-price"
-                      placeholder="$5.00"
-                      defaultValue={productPrice}
-                      decimalsLimit={2}
-                      fixedDecimalLength={2}
-                      allowNegativeValue={false}
-                      prefix="$"
-                      onValueChange={(value) => setProductPrice(value || '')}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <select
-                      value={productInterval}
-                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setProductInterval(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="monthly">Monthly</option>
-                      <option value="quarterly">Quarterly</option>
-                      <option value="yearly">Yearly</option>
-                    </select>
-                    <Input type="text" placeholder="Private URL (The content want to paywall)" value={contentUrl} onChange={(e: ChangeEvent<HTMLInputElement>) => setContentUrl(e.target.value)} />                    <Button type="submit" variant="outline" size="sm" className="flex items-center space-x-2">
-                      <span>Create Product</span>
-                    </Button>
-                  </form>
-                ) : (
-                  <Button variant="outline" size="sm" disabled className="flex items-center space-x-2">
-                    <span>Create Product</span>
-                  </Button>
-                )}
-              </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold text-black mb-3">4. Create a portal</h3>
+                  <h3 className="text-xl font-semibold text-black mb-3">2. Create a portal</h3>
                   <p className="text-black mb-4">Use over 40+ tools or even custom resources to power your portal</p>
                   <div className="flex items-center space-x-2">
                     <div style={{

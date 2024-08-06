@@ -47,6 +47,7 @@ export default function Apps() {
   const [Apps, setApps] = useState<appData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [appToDelete, setappToDelete] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [appToBroadcast, setAppToBroadcast] = useState<string | null>(null);
   const [url, setUrl] = useState('');
   const fullName = user?.fullName;
@@ -119,47 +120,55 @@ export default function Apps() {
       // Remove the deleted app from the state
       setApps(Apps.filter(app => app.id !== appToDelete));
       setappToDelete(null);
+      toast({
+        title: "App deleted successfully!",
+      });
     } catch (error) {
       console.error(error);
+      toast({
+        title: "Failed to delete app",
+        description: "Please try again later",
+        variant: "destructive",
+      });
     }
   };
 
   const broadcastApp = async () => {
     if (!appToBroadcast) return;
-  
+
     try {
       const orgId = organization?.id;
       const email = user?.primaryEmailAddress?.emailAddress;
-  
+
       if (!orgId || !email) {
         throw new Error('Missing required fields');
       }
-  
+
       // Check if a merchant account exists
       const supabase = createClerkSupabaseClient();
       const { data: merchantData, error: merchantError } = await supabase
         .from('merchants')
         .select('*')
         .eq('organization', orgId);
-  
+
       if (merchantError) {
         console.error(merchantError);
         throw new Error('Failed to fetch merchant account');
       }
-  
+
       if (!merchantData || merchantData.length === 0) {
         throw new Error('You need to finish onboarding!');
       }
-  
+
       if (!productName || !productPrice || !productInterval) {
         throw new Error('Missing required fields');
       }
-  
+
       const app = Apps.find(app => app.id === appToBroadcast);
       if (!app) {
         throw new Error('App not found');
       }
-  
+
       const portalData = {
         id: app.id,
         url: app.url,
@@ -168,7 +177,7 @@ export default function Apps() {
         price: parseFloat(productPrice),
         interval: productInterval,
       };
-  
+
       const broadcastResponse = await fetch('/api/portals/create', {
         method: 'POST',
         headers: {
@@ -176,14 +185,14 @@ export default function Apps() {
         },
         body: JSON.stringify(portalData),
       });
-  
+
       if (!broadcastResponse.ok) {
         console.error('Error creating portal:', broadcastResponse.status, broadcastResponse.statusText);
         const errorData = await broadcastResponse.json();
         console.error('Error data:', errorData);
         throw new Error('Failed to create portal');
       }
-  
+
       const data = await broadcastResponse.json();
       toast({
         title: "App broadcasted successfully!",
@@ -200,7 +209,6 @@ export default function Apps() {
       });
     }
   };
-  
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -260,7 +268,7 @@ export default function Apps() {
                       {appLogos[app.name as keyof typeof appLogos] && (
                         <img src={appLogos[app.name as keyof typeof appLogos]} alt={`${app.name} logo`} className="w-8 h-8" />
                       )}
-                      <span className="font-medium">{app.name}</span>
+                      <span className="font-medium">{productName}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
@@ -305,8 +313,11 @@ export default function Apps() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-600 hover:text-red-700"
-                              onClick={() => setappToDelete(app.id)}
+                              className="mr-1"
+                              onClick={() => {
+                                setappToDelete(app.id);
+                                setIsDeleteDialogOpen(true);
+                              }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -346,55 +357,77 @@ export default function Apps() {
       </Card>
       <Toaster />
 
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete App</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this app? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              deleteApp();
+              setIsDeleteDialogOpen(false);
+            }}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!appToBroadcast} onOpenChange={(open) => setAppToBroadcast(open ? appToBroadcast : null)}>
-      <DialogContent className="bg-white">
-        <DialogHeader>
-          <DialogTitle>Create a portal</DialogTitle>
-          <DialogDescription>
-            Create your portal and the terms of it's access
-          </DialogDescription>
-        </DialogHeader>
-            <Input
-              type="text"
-              placeholder="Portal Name"
-              value={productName}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
-            />
-            <CurrencyInput
-              id="product-price"
-              name="product-price"
-              placeholder="$5.00"
-              defaultValue={productPrice}
-              decimalsLimit={2}
-              fixedDecimalLength={2}
-              allowNegativeValue={false}
-              prefix="$"
-              onValueChange={(value) => setProductPrice(value || '')}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a billing interval" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Intervals</SelectLabel>
-                  <SelectItem value="monthly" onClick={() => setProductInterval('monthly')}>Monthly</SelectItem>
-                  <SelectItem value="quarterly" onClick={() => setProductInterval('quarterly')}>Quarterly</SelectItem>
-                  <SelectItem value="yearly" onClick={() => setProductInterval('yearly')}>Yearly</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex items-center space-x-2" 
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle>Create a portal</DialogTitle>
+            <DialogDescription>
+              Create your portal and the terms of its access
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            type="text"
+            placeholder="Portal Name"
+            value={productName}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setProductName(e.target.value)}
+          />
+          <CurrencyInput
+            id="product-price"
+            name="product-price"
+            placeholder="$5.00"
+            defaultValue={productPrice}
+            decimalsLimit={2}
+            fixedDecimalLength={2}
+            allowNegativeValue={false}
+            prefix="$"
+            onValueChange={(value) => setProductPrice(value || '')}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          />
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a billing interval" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Intervals</SelectLabel>
+                <SelectItem value="monthly" onClick={() => setProductInterval('monthly')}>Monthly</SelectItem>
+                <SelectItem value="quarterly" onClick={() => setProductInterval('quarterly')}>Quarterly</SelectItem>
+                <SelectItem value="yearly" onClick={() => setProductInterval('yearly')}>Yearly</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center space-x-2"
             onClick={broadcastApp}
           >
             <span>Create Product and Broadcast</span>
           </Button>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
