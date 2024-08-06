@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { clerkClient } from "@clerk/nextjs/server";
+import { clerkClient, auth } from "@clerk/nextjs/server";
 
 const isPublicRoute = createRouteMatcher([
   '/auth',
@@ -87,18 +87,24 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     try {
-      const user = await clerkClient().users.getUser(userId);
-      const orgId = user.publicMetadata.organization_id as string;
+      const userId = auth().userId;
+      const orgId = auth().orgId;
 
       if (orgId) {
-        const organization = await clerkClient().organizations.getOrganization({ organizationId: orgId });
-        const publicMetadata = organization.publicMetadata as { status?: string };
-
-        if (publicMetadata.status === "suspended") {
-          console.log(`Redirecting to /suspended because organization is suspended`);
-          return NextResponse.redirect(new URL('/suspended', req.url));
+        try {
+          const organization = await clerkClient().organizations.getOrganization({ organizationId: orgId });
+          const publicMetadata = organization.publicMetadata as { status?: string };
+      
+          if (publicMetadata.status === "suspended") {
+            console.log(`Redirecting to /suspended because organization is suspended`);
+            return NextResponse.redirect(new URL('/suspended', req.url));
+          }
+        } catch (error) {
+          console.log(`Redirecting to /auth/create-organization because organization is not found`);
+          return NextResponse.redirect(new URL('/auth/create-organization', req.url));
         }
       }
+      
 
       auth().protect();
     } catch (error) {

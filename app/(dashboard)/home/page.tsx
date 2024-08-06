@@ -205,8 +205,7 @@ export default function HomePage() {
           {/* New Walkthrough Card */}
           <Card className="w-full max-w-4xl mx-auto shadow-lg border-black border-opacity-20 rounded-lg mt-8">
             <CardContent className="p-8">
-              <h2 className="text-4xl font-bold text-black mb-6 text-left">Welcome to Happybase!</h2>
-              <h2 className="text-2xl font-bold text-black mb-6 text-left">Getting Started</h2>
+              <h2 className="text-3xl font-bold text-black mb-6 text-left">Hey {user.user?.firstName} 👋, let's get your paywall started!</h2>
               <p className="text-lg text-black mb-6 text-left">Follow these steps to get set up and start using our platform effectively.</p>
               <ol className="space-y-6">
               <li className="bg-gray-50 p-6 rounded-lg">
