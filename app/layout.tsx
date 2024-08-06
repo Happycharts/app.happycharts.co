@@ -15,7 +15,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignOutUrl={"https://www.happybase.co"}>
+    <ClerkProvider afterSignOutUrl={"https://www.happybase.co"} appearance={{
+      elements: {
+        footer: "hidden",
+      },
+    }}>
     <html lang="en">
       <body className={inter.variable}>
       <Theme>

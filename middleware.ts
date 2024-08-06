@@ -23,6 +23,7 @@ const allowedRoutes = [
   '/api/connect_links',
   '/api/products',
   '/api/portals/create',
+  '/api/webhooks/stripe',
   '/api/connect_links/generate',
   '/portals',
   '/api/webhooks(.*)',
@@ -81,8 +82,8 @@ export default clerkMiddleware(async (auth, req) => {
     const { userId } = auth();
 
     if (!userId) {
-      console.log(`Redirecting to /auth/signup because user is not authenticated`);
-      return NextResponse.redirect(new URL('/auth/signup', req.url));
+      console.log(`Redirecting to /auth/login because user is not authenticated`);
+      return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
     try {

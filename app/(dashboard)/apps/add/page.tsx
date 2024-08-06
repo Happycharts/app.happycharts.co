@@ -14,33 +14,33 @@ import { useUser } from "@clerk/nextjs"
 
 const apps = [
   {
-    name: "Hex",
-    description: "Embed a Hex app",
-    iconSrc: "https://cdn.prod.website-files.com/5d1126db676120bb4fe43762/63fd16cde55f78843fae69d8_e4184b933d3022409dd3d63191e1b123f2618cd9-250x251.png"
-  },
-  {
-    name: "Notion",
-    description: "Embed a Notion app",
-    iconSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Notion-logo.svg/2048px-Notion-logo.svg.png"
-  },
-  {
-    name: "Observable",
-    description: "Embed an Observable app",
-    iconSrc: "https://avatars.githubusercontent.com/u/30080011?s=280&v=4"
-  },
-  {
     name: "Coda",
-    description: "Embed a Coda document",
+    description: "Paywall a Coda document",
     iconSrc: "https://upload.wikimedia.org/wikipedia/en/3/3f/Coda_%28document_editor%29_logo.png"
   },
   {
-    name: "Deepnote",
-    description: "Embed your Deepnote workspace",
-    iconSrc: "https://cdn-images-1.medium.com/max/1200/1*Geecfuc_bb_Fa3i4zWnsjQ.png"
+    name: "Hex",
+    description: "Paywall a Hex app",
+    iconSrc: "https://cdn.prod.website-files.com/5d1126db676120bb4fe43762/63fd16cde55f78843fae69d8_e4184b933d3022409dd3d63191e1b123f2618cd9-250x251.png"
+  },
+  {
+    name: "Figma",
+    description: "Paywall an Figma app",
+    iconSrc: "https://asset.brandfetch.io/idZHcZ_i7F/idbeZ1Yw2c.svg"
+  },
+  {
+    name: "Obsidian",
+    description: "Paywall a Obsidian Publish app",
+    iconSrc: "https://asset.brandfetch.io/idGpyxH_Fa/idjJkC-FjU.svg"
+  },
+  {
+    name: "Miro",
+    description: "Paywall your Miro workspace",
+    iconSrc: "https://asset.brandfetch.io/idAnDTFapY/idFdbEywEz.svg"
   },
   {
     name: "Custom App",
-    description: "Embed any app with just the URL",
+    description: "Paywall (almost) any app with just the URL",
     iconSrc: "https://cdn-icons-png.flaticon.com/512/487/487622.png"
   },
 ]

@@ -242,7 +242,7 @@ export default function HomePage() {
                       width: '100%'
                     }}>
                       <iframe
-                        src="https://demo.arcade.software/Bc532er376ZZJTQAfWyh?embed&show_copy_link=true"
+                        src="https://demo.arcade.software/lsJDEvQIgtCwmOk3Yyh6?embed&show_copy_link=true"
                         title="localhost:3000/apps"
                         frameBorder="0"
                         loading="lazy"
@@ -261,7 +261,7 @@ export default function HomePage() {
                 </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
                   <h3 className="text-xl font-semibold text-black mb-3">5. Share your portal link</h3>
-                  <p className="text-black mb-4">Start sharing your portal with your audience so you get paid!</p>
+                  <p className="text-black mb-4">Start sharing your portal with your audience so you can get paid!</p>
                 </li>
               </ol>
             </CardContent>
