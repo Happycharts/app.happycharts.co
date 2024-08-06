@@ -50,7 +50,6 @@ export default function Apps() {
   const [appToBroadcast, setAppToBroadcast] = useState<string | null>(null);
   const [url, setUrl] = useState('');
   const fullName = user?.fullName;
-  const [products, setProducts] = useState<any[]>([]);
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productInterval, setProductInterval] = useState('monthly');
@@ -89,26 +88,7 @@ export default function Apps() {
       setIsLoading(false);
     };
 
-    const fetchProducts = async () => {
-      if (!organization?.id) return;
-    
-      const supabase = createClerkSupabaseClient();
-    
-      // Fetch products
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('organization', organization?.id);
-    
-      if (productsError) {
-        console.error(productsError);
-      } else {
-        setProducts(productsData);
-      }
-    };
-
     fetchApps();
-    fetchProducts();
     analytics.track('Viewed Apps', {
       userId: user?.id,
       organizationId: organization?.id,
@@ -145,7 +125,7 @@ export default function Apps() {
   };
 
   const broadcastApp = async () => {
-    if (!appToBroadcast || !contentUrl || !url) return;
+    if (!appToBroadcast) return;
   
     try {
       const orgId = organization?.id;
@@ -171,7 +151,7 @@ export default function Apps() {
         throw new Error('You need to finish onboarding!');
       }
   
-      if (!productPrice || !productInterval || !contentUrl) {
+      if (!productName || !productPrice || !productInterval) {
         throw new Error('Missing required fields');
       }
   
@@ -181,10 +161,9 @@ export default function Apps() {
       }
   
       const portalData = {
-        id: app?.id,
-        url: app?.url,
-        appName: app.name,
-        contentUrl: contentUrl,
+        id: app.id,
+        url: app.url,
+        appName: productName,
         merchant: merchantData[0].id,
         price: parseFloat(productPrice),
         interval: productInterval,
@@ -211,7 +190,6 @@ export default function Apps() {
         description: `Product: ${app.name}`,
       });
       setAppToBroadcast(null);
-      setContentUrl('');
       setBroadcastedApps([...broadcastedApps, appToBroadcast]);
     } catch (error) {
       console.error('Error creating portal:', error);
@@ -394,7 +372,6 @@ export default function Apps() {
               onValueChange={(value) => setProductPrice(value || '')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
-            <Input type="text" placeholder="Content URL (The content want to paywall)" value={contentUrl} onChange={(e: ChangeEvent<HTMLInputElement>) => setContentUrl(e.target.value)} />
             <Select>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select a billing interval" />
@@ -408,9 +385,14 @@ export default function Apps() {
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" className="flex items-center space-x-2" onClick={broadcastApp}>
-              <span>Create Product and Broadcast</span>
-            </Button>
+            <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center space-x-2" 
+            onClick={broadcastApp}
+          >
+            <span>Create Product and Broadcast</span>
+          </Button>
       </DialogContent>
     </Dialog>
     </div>

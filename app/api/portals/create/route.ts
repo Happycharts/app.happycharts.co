@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/utils/supabase/server';
 import { getAuth } from '@clerk/nextjs/server';
 import Stripe from 'stripe';
+import crypto from 'crypto';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { id, url, appName, contentUrl, merchant, price, interval } = body;
+  const { id, url, appName, merchant, price, interval } = body;
 
   try {
     const supabase = createClient();
@@ -32,6 +33,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'App not found or you do not have permission' }, { status: 404 });
     }
 
+    // Generate a unique access token
+    const accessToken = crypto.randomBytes(32).toString('hex');
+
     // Create Stripe product
     const product = await stripe.products.create({
       name: appName,
@@ -43,32 +47,33 @@ export async function POST(request: NextRequest) {
 
     const intervalMap: {
       monthly: Interval;
+      quarterly: Interval;
       yearly: Interval;
-      weekly: Interval;
-      daily: Interval;
     } = {
       monthly: 'month',
+      quarterly: 'month',
       yearly: 'year',
-      weekly: 'week',
-      daily: 'day',
     };
     
-    const validIntervals = Object.keys(intervalMap);
-    
+    const validIntervals = ['monthly', 'quarterly', 'yearly'];
+
     if (!validIntervals.includes(interval)) {
       return NextResponse.json({ error: 'Invalid interval' }, { status: 400 });
     }
     
     const stripePrice = await stripe.prices.create({
       product: product.id,
-      unit_amount: price * 100, // Stripe expects amount in cents
+      unit_amount: parseInt((price * 100).toFixed(0)), // Round the price to the nearest cent
       currency: 'usd',
       recurring: { interval: intervalMap[interval as keyof typeof intervalMap] },
     }, {
       stripeAccount: merchant.id,
-    });     
+    });    
 
-    // Create payment link
+    // Create a unique redirect URL
+    const redirectUrl = `http://localhost:3000/portal/${app.id}/access/${accessToken}`;
+
+    // Create payment link with custom redirect
     const paymentLink = await stripe.paymentLinks.create({
       line_items: [
         {
@@ -76,6 +81,12 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
+      after_completion: {
+        type: 'redirect',
+        redirect: {
+          url: redirectUrl,
+        },
+      },
     }, {
       stripeAccount: merchant.id,
     });    
@@ -87,13 +98,14 @@ export async function POST(request: NextRequest) {
         id: id,
         creator_id: userId,
         url: url,
-        content_url: contentUrl,
         product_id: product.id,
         merchant: merchant,
         price: price,
         interval: interval,
         stripe_price_id: stripePrice.id,
         payment_link: paymentLink.url,
+        access_token: accessToken,
+        redirect_url: redirectUrl,
       })
       .select()
       .single();

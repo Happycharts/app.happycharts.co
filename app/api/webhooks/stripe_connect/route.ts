@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { clerkClient } from '@clerk/nextjs/server';
 import { Analytics } from '@segment/analytics-node'
 const analytics = new Analytics({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
+import { Resend } from 'resend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
     case 'payment_intent.succeeded':
       console.log('PaymentIntent was successful!');
       // Handle successful payment intent
+
       break;
 
     case 'payout.failed':

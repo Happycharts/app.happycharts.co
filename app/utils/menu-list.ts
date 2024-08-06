@@ -78,19 +78,6 @@ import {
               },
             ]
           },
-          {
-            href: "/portals",
-            label: "Portals",
-            active: pathname.includes("/portals"),
-            icon: DoorOpen,
-            submenus: [
-              {
-                href: "/portals/",
-                label: "Manage Portals",
-                active: pathname.includes("/portals/"),
-              },
-            ]
-          },
         ]
       },
       {
