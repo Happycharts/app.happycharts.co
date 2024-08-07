@@ -10,6 +10,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
+import Intercom from '@intercom/messenger-js-sdk';
 
 type MerchantData = {
   id: string;
@@ -23,9 +24,7 @@ export default function HomePage() {
   const { organization, membership } = useOrganization();
   const firstName = user?.user?.firstName;
   const lastName = user?.user?.lastName;
-  const email = user?.user?.primaryEmailAddress?.emailAddress;
   const orgName = useOrganization().organization?.name;
-  const orgId = useOrganization().organization?.id;
   const { session } = useClerk();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStripeConnected, setIsStripeConnected] = useState(false);
@@ -35,6 +34,19 @@ export default function HomePage() {
   const [productPrice, setProductPrice] = useState('');
   const [productInterval, setProductInterval] = useState('monthly');
   const [contentUrl, setContentUrl] = useState(''); // Change the default value here
+  const userId = useUser()?.user?.id;
+  const orgId = useOrganization()?.organization?.id;
+  const name = useUser()?.user?.firstName || useUser()?.user?.lastName;
+  const email = useUser()?.user?.primaryEmailAddress?.emailAddress;
+
+  Intercom({
+    app_id: 'kz8t3t7h',
+    user_id: userId, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
+    name: name!, // IMPORTANT: Replace "user.name" with the variable you use to capture the user's name
+    email: email, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email
+    orgId: orgId, // IMPORTANT: Replace "org.id" with the variable you use to capture the organization's ID
+    orgName: orgName, // IMPORTANT: Replace "org.name" with the variable you use to capture the organization's name
+  });
 
   const supabase = createClient();
   const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });

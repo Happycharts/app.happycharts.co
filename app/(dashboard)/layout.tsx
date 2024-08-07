@@ -12,7 +12,8 @@ import { Menu } from "@/components/sidebar/menu"
 import { useSidebarToggle } from "@/app/hooks/use-sidebar-toggle"
 import { SidebarToggle } from "@/components/sidebar/sidebar-toggle"
 import Logo from "@/public/happybase.svg"
-
+import Intercom from '@intercom/messenger-js-sdk';
+import { useUser, useOrganization } from '@clerk/nextjs';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", weight: ["400", "700"] })
 
@@ -26,6 +27,7 @@ export default function RootLayout({
   if(!sidebar) return null;
 
   return (
+    
     <html lang="en">
       <body className={`${inter.className} min-h-screen flex`}>
       <aside
