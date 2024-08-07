@@ -20,7 +20,13 @@ async function handleUserCreated(data: any) {
       name: data.first_name + ' ' + data.last_name,
       createdAt: data.created_at,
     },
+    integrations: {
+      Intercom: {
+        user_hash: `crypto.createHmac('sha256', ${process.env.HMAC_SECRET}).update(user.id).digest('hex')`
+      }
+    }
   });
+
   analytics.track({
     userId: data.id,
     event: 'User Created',
@@ -30,6 +36,7 @@ async function handleUserCreated(data: any) {
       createdAt: data.created_at,
     },
   });
+
   const userId = data.id;
 }
 
