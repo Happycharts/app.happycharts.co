@@ -104,6 +104,7 @@ export async function POST(request: Request) {
             const session = event.data.object as Stripe.Checkout.Session;
             const customerEmail = session.customer_details?.email;
             const customerName = session.customer_details?.name;
+            const userId = auth().userId;
             
             if (customerEmail) {
               try {
@@ -119,17 +120,14 @@ export async function POST(request: Request) {
                   skipPasswordChecks: true,
                   skipPasswordRequirement: true,
                 });
-          
-                await analytics.identify(newUser.id, {
-                  email: customerEmail,
-                  name: customerName,
-                });
                 await analytics.track({
-                  userId: newUser.id,
+                  userId: userId!,
                   event: 'Checkout Completed',
                   properties: {
                     checkoutSessionId: session.id,
                     customerEmail: customerEmail,
+                    customerName: customerName,
+                    userId: userId,
                   },
                 });
                 console.log('Checkout completed event tracked');
