@@ -12,6 +12,8 @@ import { Menu } from "@/components/sidebar/menu"
 import { useSidebarToggle } from "@/app/hooks/use-sidebar-toggle"
 import { SidebarToggle } from "@/components/sidebar/sidebar-toggle"
 import Logo from "@/public/happybase.svg"
+import Intercom from '@intercom/messenger-js-sdk';
+import { useUser, useOrganization } from "@clerk/nextjs"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", weight: ["400", "700"] })
 
@@ -20,6 +22,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const user = useUser();
+  const org = useOrganization();
+  Intercom({
+    app_id: 'kz8t3t7h',
+    user_id: user.user?.id, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
+    name: user.user?.id, // IMPORTANT: Replace "user.name" with the variable you use to capture the user's name
+    email: user.user?.id, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email
+  });
   const sidebar = useStore(useSidebarToggle, (state) => state);
 
   if(!sidebar) return null;
