@@ -23,8 +23,6 @@ import { cn } from "@/app/utils/utils";
 import { Select, SelectItem, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectValue } from "@/components/ui/select";
 import { ChangeEvent } from 'react';
 import CurrencyInput from 'react-currency-input-field';
-import ServiceBell from "@servicebell/widget";
-ServiceBell("init", "b951bf1ae1c8405b8f7a47ae2a153512");
 
 type appData = {
   id: string;
