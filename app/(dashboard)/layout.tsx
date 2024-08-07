@@ -27,8 +27,9 @@ export default function RootLayout({
   Intercom({
     app_id: 'kz8t3t7h',
     user_id: user.user?.id, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
-    name: user.user?.id, // IMPORTANT: Replace "user.name" with the variable you use to capture the user's name
-    email: user.user?.id, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email
+    firstName: user.user?.firstName,
+    lastName: user.user?.lastName,
+    email: user.user?.primaryEmailAddress?.emailAddress,
   });
   const sidebar = useStore(useSidebarToggle, (state) => state);
 
