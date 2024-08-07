@@ -170,6 +170,9 @@ dependencies:
   '@segment/analytics-node':
     specifier: ^2.1.2
     version: 2.1.2
+  '@servicebell/widget':
+    specifier: ^0.1.6
+    version: 0.1.6
   '@stripe/react-connect-js':
     specifier: ^3.3.12
     version: 3.3.12(@stripe/connect-js@3.3.12)(react-dom@18.3.1)(react@18.3.1)
@@ -6799,6 +6802,10 @@ packages:
     dependencies:
       domhandler: 5.0.3
       selderee: 0.11.0
+    dev: false
+
+  /@servicebell/widget@0.1.6:
+    resolution: {integrity: sha512-Kh21FAETJlk32MRXHGYKxFTWLbbLlgLX3lKYH/02KHaQGIPRdHh/Ok7DiRc+/6f/OTQq3x3ady7e4o9weV5yQg==}
     dev: false
 
   /@sigstore/bundle@2.3.2:
