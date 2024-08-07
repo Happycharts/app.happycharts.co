@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkClient, auth } from '@clerk/nextjs/server';
 import { Analytics } from '@segment/analytics-node'
 const analytics = new Analytics({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
+
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
@@ -33,6 +34,36 @@ export async function POST(request: Request) {
   switch (event.type as Stripe.Event.Type) {
     case 'customer.created':
     break
+    case 'charge.succeeded':
+      const userId = auth().userId
+      const charge = event.data.object as Stripe.Charge;
+      analytics.track(
+        {
+          userId: userId!,
+          event: 'Charge Succeeded',
+          properties: {
+            amount: charge.amount,
+            currency: charge.currency,
+          },
+        }
+      )
+      console.log('Invoice payment failed!');
+      // Handle failed invoice payment
+      break;
+    case 'payment_link.created':
+      const payment_link = event.data.object as Stripe.PaymentLink;
+      analytics.track(
+        {
+          userId: userId!,
+          event: 'Payment Link Created',
+          properties: {
+            line_items: payment_link.line_items,
+          },
+        }
+      )
+      console.log('Invoice payment failed!');
+      // Handle failed invoice payment
+      break;
     case 'customer.updated':
       break;
     case 'checkout.session.completed':
@@ -65,7 +96,7 @@ export async function POST(request: Request) {
           // Track the event in Segment
           analytics.track({
             userId: newUser.id,
-            event: 'User Created',
+            event: `New Signup!: ${newUser.firstName} ${newUser.lastName}`,
             properties: {
               customerEmail: customerEmail,
               checkoutSessionId: session.id,
