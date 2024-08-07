@@ -10,7 +10,6 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
-import { ServiceBellInitializer } from '@/components/ServiceBellInitializer'; // Import the new component
 
 type MerchantData = {
   id: string;
