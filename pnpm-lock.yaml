@@ -59,6 +59,9 @@ dependencies:
   '@intercom/messenger-js-sdk':
     specifier: ^0.0.13
     version: 0.0.13
+  '@june-so/analytics-node':
+    specifier: ^8.0.0
+    version: 8.0.0
   '@kubernetes/client-node':
     specifier: ^0.21.0
     version: 0.21.0
@@ -3615,6 +3618,15 @@ packages:
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
     dev: false
 
+  /@june-so/analytics-node@8.0.0:
+    resolution: {integrity: sha512-gY/tzrtC8ONw6czaillRiLwqLp+r7lNiPdLbpgB61b42pgAYBHdiU0qjweS6xASRZSYaqH27WFADtBtw4KsifA==}
+    engines: {node: '>=4'}
+    dependencies:
+      '@segment/analytics-node': 1.3.0
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /@kubernetes/client-node@0.21.0:
     resolution: {integrity: sha512-yYRbgMeyQbvZDHt/ZqsW3m4lRefzhbbJEuj8sVXM+bufKrgmzriA2oq7lWPH/k/LQIicAME9ixPUadTrxIF6dQ==}
     dependencies:
@@ -6732,12 +6744,27 @@ packages:
       '@daybrush/utils': 1.13.0
     dev: false
 
+  /@segment/analytics-core@1.4.1:
+    resolution: {integrity: sha512-kV0Pf33HnthuBOVdYNani21kYyj118Fn+9757bxqoksiXoZlYvBsFq6giNdCsKcTIE1eAMqNDq3xE1VQ0cfsHA==}
+    dependencies:
+      '@lukeed/uuid': 2.0.1
+      '@segment/analytics-generic-utils': 1.1.1
+      dset: 3.1.3
+      tslib: 2.6.3
+    dev: false
+
   /@segment/analytics-core@1.6.0:
     resolution: {integrity: sha512-bn9X++IScUfpT7aJGjKU/yJAu/Ko2sYD6HsKA70Z2560E89x30pqgqboVKY8kootvQnT4UKCJiUr5NDMgjmWdQ==}
     dependencies:
       '@lukeed/uuid': 2.0.1
       '@segment/analytics-generic-utils': 1.2.0
       dset: 3.1.3
+      tslib: 2.6.3
+    dev: false
+
+  /@segment/analytics-generic-utils@1.1.1:
+    resolution: {integrity: sha512-THTIzBPHnvu1HYJU3fARdJ3qIkukO3zDXsmDm+kAeUks5R9CBXOQ6rPChiASVzSmwAIIo5uFIXXnCraojlq/Gw==}
+    dependencies:
       tslib: 2.6.3
     dev: false
 
@@ -6760,6 +6787,20 @@ packages:
       node-fetch: 2.7.0
       tslib: 2.6.3
       unfetch: 4.2.0
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
+  /@segment/analytics-node@1.3.0:
+    resolution: {integrity: sha512-lRLz1WZaDokMoUe299yP5JkInc3OgJuqNNlxb6j0q22umCiq6b5iDo2gRmFn93reirIvJxWIicQsGrHd93q8GQ==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@lukeed/uuid': 2.0.1
+      '@segment/analytics-core': 1.4.1
+      '@segment/analytics-generic-utils': 1.1.1
+      buffer: 6.0.3
+      node-fetch: 2.7.0
+      tslib: 2.6.3
     transitivePeerDependencies:
       - encoding
     dev: false
