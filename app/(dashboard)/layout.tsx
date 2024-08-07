@@ -24,12 +24,12 @@ export default function RootLayout({
 }>) {
   const user = useUser();
   const org = useOrganization();
-  Intercom({
-    app_id: 'kz8t3t7h',
-    user_id: user.user?.id, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
-    name: user.user?.firstName! || user.user?.lastName!,
-    email: user.user?.id, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email
-  });
+  // Intercom({
+  //   app_id: 'kz8t3t7h',
+  //   user_id: user.user?.id, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
+  //   name: user.user?.firstName! || user.user?.lastName!,
+  //   email: user.user?.id, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email
+  // });
   const sidebar = useStore(useSidebarToggle, (state) => state);
 
   if(!sidebar) return null;
