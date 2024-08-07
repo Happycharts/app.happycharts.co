@@ -46,7 +46,7 @@ export default function HomePage() {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {
       if (!user?.user?.id || !organization?.id) return;
-  
+      <ServiceBellInitializer /> 
       setIsLoading(true);
   
       const adminStatus = checkIfUserIsAdmin();
@@ -161,7 +161,6 @@ export default function HomePage() {
 
   const SkeletonContent = () => (
     <>
-    <ServiceBellInitializer /> 
       <Card className="w-full max-w-4xl mx-auto border-black border-opacity-20 rounded-lg mb-8">
         <CardContent className="p-8">
           <Skeleton className="h-10 w-3/4 mx-auto mb-8" />
