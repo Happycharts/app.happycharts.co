@@ -56,6 +56,9 @@ dependencies:
   '@hookform/resolvers':
     specifier: ^3.9.0
     version: 3.9.0(react-hook-form@7.52.1)
+  '@intercom/messenger-js-sdk':
+    specifier: ^0.0.13
+    version: 0.0.13
   '@kubernetes/client-node':
     specifier: ^0.21.0
     version: 0.21.0
@@ -3321,6 +3324,10 @@ packages:
     engines: {node: '>=18'}
     dependencies:
       mute-stream: 1.0.0
+    dev: false
+
+  /@intercom/messenger-js-sdk@0.0.13:
+    resolution: {integrity: sha512-htSK24+TywrsPy97yuTruAKsBIZIkzPktauO2aJqLmN4XgeepvUOkL13ryV2Y5H3tE3EuJQzJNcsRSXr+cRfkw==}
     dev: false
 
   /@isaacs/cliui@8.0.2:

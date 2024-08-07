@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import { Theme } from '@radix-ui/themes';
-import { ServiceBellInitializer } from '@/components/ServiceBellInitializer'; // Import the new component
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +25,6 @@ export default function RootLayout({
       <body className={inter.variable}>
       <Theme>
         {children}
-        <ServiceBellInitializer /> 
       </Theme>
       </body>
     </html>
