@@ -43,12 +43,6 @@ export default function HomePage() {
   const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      ServiceBellInitializer();
-    }
-  }, []);
-
-  useEffect(() => {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {
       if (!user?.user?.id || !organization?.id) return;
