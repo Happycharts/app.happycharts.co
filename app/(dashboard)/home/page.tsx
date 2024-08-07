@@ -10,6 +10,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
+import { ServiceBellInitializer } from '@/components/ServiceBellInitializer'; // Import the new component
 
 type MerchantData = {
   id: string;
@@ -160,6 +161,7 @@ export default function HomePage() {
 
   const SkeletonContent = () => (
     <>
+    <ServiceBellInitializer /> 
       <Card className="w-full max-w-4xl mx-auto border-black border-opacity-20 rounded-lg mb-8">
         <CardContent className="p-8">
           <Skeleton className="h-10 w-3/4 mx-auto mb-8" />
