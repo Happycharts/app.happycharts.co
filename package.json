@@ -31,6 +31,7 @@
     "@heroicons/react": "^2.1.5",
     "@hookform/resolvers": "^3.9.0",
     "@intercom/messenger-js-sdk": "^0.0.13",
+    "@jitsu/jitsu-react": "^1.9.6",
     "@june-so/analytics-node": "^8.0.0",
     "@kubernetes/client-node": "^0.21.0",
     "@notionhq/client": "^2.2.15",
