@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { clerkClient } from '@clerk/nextjs/server';
 import { Analytics } from '@segment/analytics-node'
-const analytics = new Analytics({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
 import { Resend } from 'resend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -12,6 +11,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(request: Request) {
   const sig = request.headers.get('stripe-signature');
   const body = await request.text();
+
+  const analytics = new Analytics({
+    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
+    host: 'https://cdp.customer.io',
+  })
 
   let event;
 

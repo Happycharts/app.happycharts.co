@@ -68,7 +68,7 @@ export default function AppsPage() {
     const userName = useUser().user?.fullName;
 
     const analytics = new Analytics({
-      writeKey: '0d586efab7e897a49bda',
+      writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
       host: 'https://cdp.customer.io',
     })
 

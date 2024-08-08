@@ -21,8 +21,6 @@ interface FeatureItemProps {
   description: string;
 }
 
-const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
-
 export default function AuthenticationPage() {
   return (
     <div className="bg-black h-screen w-screen overflow-hidden flex items-stretch">

@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { clerkClient, auth } from '@clerk/nextjs/server';
-import { Analytics } from '@june-so/analytics-node';
+import { Analytics } from '@customerio/cdp-analytics-node'
 
-const analytics = new Analytics('uqvvgKmUtJaSDAVp');
-
+const analytics = new Analytics({
+  writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
+  host: 'https://cdp.customer.io',
+})
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
