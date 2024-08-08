@@ -40,24 +40,24 @@ export default function HomePage() {
 
   const supabase = createClient();
 
-  const analytics = new Analytics({
-    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
-    host: 'https://cdp.customer.io',
-  })
-  
-  analytics.identify({
-    userId: userId!,
-    traits: {
-      name: name,
-      email: email,
-    }
-  });
-
   useEffect(() => {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {
       if (!user?.user?.id || !organization?.id) return;
       setIsLoading(true);
+
+      const analytics = new Analytics({
+        writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
+        host: 'https://cdp.customer.io',
+      })
+      
+      analytics.identify({
+        userId: userId!,
+        traits: {
+          name: name,
+          email: email,
+        }
+      });
   
       const adminStatus = checkIfUserIsAdmin();
       if (isMounted) {
