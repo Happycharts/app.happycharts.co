@@ -22,6 +22,8 @@ import { cn } from "@/app/utils/utils";
 import { Select, SelectItem, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectValue } from "@/components/ui/select";
 import { ChangeEvent } from 'react';
 import CurrencyInput from 'react-currency-input-field';
+import { useJitsu } from "@jitsu/jitsu-react"
+import { useRouter } from "next/router"
 
 type appData = {
   id: string;
@@ -65,6 +67,7 @@ export default function Apps() {
     const saved = localStorage.getItem('broadcastedApps');
     return saved ? JSON.parse(saved) : [];
   });
+  const { analytics } = useJitsu()
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
@@ -74,10 +77,10 @@ export default function Apps() {
     let isMounted = true;
     const fetchApps = async () => {
       if (!user?.id) return;
-
+      analytics.page()
       setIsLoading(true);
       const supabase = createClerkSupabaseClient();
-
+      analytics.identify(user)
       // Fetch apps
       const { data: appsData, error: appsError } = await supabase
         .from('apps')
@@ -337,8 +340,9 @@ export default function Apps() {
                               size="sm"
                               className={`ml-1 ${broadcastedApps.includes(app.id) ? 'text-green-600 hover:text-green-700' : ''}`}
                               onClick={() => {
+                                analytics.track('portal_created', { app_id: app.id });
                                 setAppToBroadcast(app.id);
-                                setUrl(app.url); // Set the URL from the app data
+                                setUrl(app.url);
                               }}
                             >
                               <RadioTower className="h-4 w-4" />

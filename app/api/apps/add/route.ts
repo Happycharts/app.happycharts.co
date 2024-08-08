@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const supabase = createClient();
   const { userId, orgId } = auth();
 
-  if (!userId || !orgId) {
+  if (!userId) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 

@@ -9,6 +9,7 @@ import { createClient } from '@/app/utils/supabase/client';
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
+import { useJitsu } from "@jitsu/jitsu-react"
 
 type MerchantData = {
   id: string;
@@ -49,7 +50,10 @@ export default function HomePage() {
       if (isMounted) {
         setIsAdmin(adminStatus);
       }
+      const { analytics } = useJitsu()
   
+      analytics.page()
+      analytics.identify(userId)
       // Fetch existing merchant data
       const { data: existingMerchant, error: merchantError } = await supabase
         .from('merchants')
