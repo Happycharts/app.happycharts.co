@@ -2,8 +2,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider, useAuth, useUser, useOrganization } from '@clerk/nextjs'
 import { Theme } from '@radix-ui/themes';
+import { Analytics } from '@customerio/cdp-analytics-node'
 
 export const dynamic = "force-dynamic";
 

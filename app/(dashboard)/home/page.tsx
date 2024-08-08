@@ -10,6 +10,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
+import { Analytics } from '@customerio/cdp-analytics-node'
 
 type MerchantData = {
   id: string;
@@ -35,12 +36,32 @@ export default function HomePage() {
   const [contentUrl, setContentUrl] = useState(''); // Change the default value here
   const userId = useUser()?.user?.id;
   const orgId = useOrganization()?.organization?.id;
-  const name = useUser()?.user?.firstName || useUser()?.user?.lastName;
+  const name = useUser()?.user?.firstName + ' ' + useUser()?.user?.lastName;
   const email = useUser()?.user?.primaryEmailAddress?.emailAddress;
 
-  const supabase = createClient();
-  const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });
+  const analytics = new Analytics({
+    writeKey: '0d586efab7e897a49bda',
+    host: 'https://cdp.customer.io',
+  })
 
+  const supabase = createClient();
+
+  analytics.page({
+    userId: userId!,
+    properties: {
+      page: 'Home',
+      organization: orgName,
+    },
+  });
+
+  analytics.identify({
+    userId: userId!,
+    traits: {
+      name: name,
+      email: email,
+      phone: user?.user?.phoneNumbers[0]?.phoneNumber,
+    }
+  });  
   useEffect(() => {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {
@@ -102,7 +123,15 @@ export default function HomePage() {
           setIsStripeConnected(!!existingMerchant.onboarding_link);
         }
       }
-  
+
+      
+    analytics.track({
+      userId: userId!,
+      event: 'Merchant Onboarding Started',
+      properties: {
+        name: user.user?.firstName,
+      }
+    });
       setIsLoading(false);
     };
   
@@ -131,7 +160,17 @@ export default function HomePage() {
       interval: productInterval,
       private_url: contentUrl,
     };
-  
+
+    analytics.track({
+      userId: userId!,
+      event: 'Product Created',
+      properties: {
+        product: productName,
+        revenue: productPrice,
+        qty: 1
+      }
+    });
+    
     console.log('Sending product data:', productData);
   
     try {
