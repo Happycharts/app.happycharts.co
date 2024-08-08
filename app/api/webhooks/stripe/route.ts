@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { clerkClient, auth } from '@clerk/nextjs/server';
-import { Analytics } from '@customerio/cdp-analytics-node'
-
-const analytics = new Analytics({
-  writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
-  host: 'https://cdp.customer.io',
-})
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
@@ -39,14 +33,6 @@ export async function POST(request: Request) {
       case 'customer.created':
   const customer = event.data.object as Stripe.Customer;
   try {
-    await analytics.track({
-      userId: customer.id,
-      event: 'Customer Created',
-      properties: {
-        email: customer.email,
-        name: customer.name,
-      },
-    });
     console.log('Customer created event tracked');
   } catch (error) {
     console.error('Failed to track customer created event:', error);
@@ -56,14 +42,6 @@ export async function POST(request: Request) {
     const charge = event.data.object as Stripe.Charge;
     const chargeUserId = charge.customer as string;
     try {
-      await analytics.track({
-        userId: chargeUserId,
-        event: 'Charge Succeeded',
-        properties: {
-          amount: charge.amount,
-          currency: charge.currency,
-        },
-      });
       console.log('Charge succeeded event tracked');
     } catch (error) {
       console.error('Failed to track charge succeeded event:', error);
@@ -73,14 +51,6 @@ export async function POST(request: Request) {
         const payment_link = event.data.object as Stripe.PaymentLink;
         const linkCreatorId = payment_link.metadata?.created_by || 'unknown';
         try {
-          await analytics.track({
-            userId: linkCreatorId,
-            event: 'Payment Link Created',
-            properties: {
-              url: payment_link.url,
-              active: payment_link.active,
-            },
-          });
           console.log('Payment link created event tracked');
         } catch (error) {
           console.error('Failed to track payment link created event:', error);
@@ -89,14 +59,6 @@ export async function POST(request: Request) {
         case 'customer.updated':
           const updatedCustomer = event.data.object as Stripe.Customer;
           try {
-            await analytics.track({
-              userId: updatedCustomer.id,
-              event: 'Customer Updated',
-              properties: {
-                email: updatedCustomer.email,
-                name: updatedCustomer.name,
-              },
-            });
             console.log('Customer updated event tracked');
           } catch (error) {
             console.error('Failed to track customer updated event:', error);
@@ -122,16 +84,6 @@ export async function POST(request: Request) {
                   skipPasswordChecks: true,
                   skipPasswordRequirement: true,
                 });
-                await analytics.track({
-                  userId: userId!,
-                  event: 'Checkout Completed',
-                  properties: {
-                    checkoutSessionId: session.id,
-                    customerEmail: customerEmail,
-                    customerName: customerName,
-                    userId: userId,
-                  },
-                });
                 console.log('Checkout completed event tracked');
               } catch (error) {
                 console.error('Failed to create user or track checkout event:', error);
@@ -144,42 +96,11 @@ export async function POST(request: Request) {
     case 'invoice.paid':
       const invoice = event.data.object as Stripe.Invoice;
       console.log('Invoice was paid!');
-      analytics.track(
-        {
-          userId: invoice.id,
-          event: 'Invoice Paid',
-          properties: {
-            amount: invoice.amount_due,
-            currency: invoice.currency,
-            invoiceId: invoice.id,
-            invoiceNumber: invoice.number,
-            invoiceDate: invoice.due_date,
-            customerEmail: invoice.customer_email,
-            customerName: invoice.customer_name,
-            customerId: invoice.customer,
-          },
-        }
-      )
       // Handle paid invoice
       break;
     case 'invoice.payment_failed':
       const failedInvoice = event.data.object as Stripe.Invoice;
-      analytics.track(
-        {
-          userId: failedInvoice.id,
-          event: 'Invoice Payment Failed',
-          properties: {
-            amount: failedInvoice.amount_due,
-            currency: failedInvoice.currency,
-            invoiceId: failedInvoice.id,
-            invoiceNumber: failedInvoice.number,
-            invoiceDate: failedInvoice.due_date,
-            customerEmail: failedInvoice.customer_email,
-            customerName: failedInvoice.customer_name,
-            customerId: failedInvoice.customer,
-          },
-        }
-      )
+
       console.log('Invoice payment failed!');
       // Handle failed invoice payment
       break;
