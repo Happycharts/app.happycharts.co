@@ -3,41 +3,13 @@ import { headers } from 'next/headers'
 import { WebhookEvent, clerkClient } from '@clerk/nextjs/server'
 import Stripe from 'stripe';
 import { createClient } from '@/app/utils/supabase/server';
-import { Analytics } from '@customerio/cdp-analytics-node'
 
-const analytics = new Analytics({
-  writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
-  host: 'https://cdp.customer.io',
-})
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
 });
 
 async function handleUserCreated(data: any) {
   console.log('User created:', data);
-  analytics.identify({
-    userId: data.id,
-    traits: {
-      email: data.email_addresses[0].email_address,
-      name: data.first_name + ' ' + data.last_name,
-      createdAt: data.created_at,
-    },
-    integrations: {
-      Intercom: {
-        user_hash: `crypto.createHmac('sha256', ${process.env.HMAC_SECRET}).update(user.id).digest('hex')`
-      }
-    }
-  });
-
-  analytics.track({
-    userId: data.id,
-    event: 'User Created',
-    properties: {
-      email: data.email_addresses[0].email_address,
-      name: data.first_name + ' ' + data.last_name,
-      createdAt: data.created_at,
-    },
-  });
 
   const userId = data.id;
 }
