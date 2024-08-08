@@ -19,6 +19,7 @@ const allowedRoutes = [
   '/query',
   '/auth',
   '/api/(.*)',
+  '/refresh',
   '/api/apps',
   '/api/connect_links',
   '/api/products',
