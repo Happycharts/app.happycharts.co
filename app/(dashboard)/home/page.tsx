@@ -9,6 +9,7 @@ import { createClient } from '@/app/utils/supabase/client';
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
+import { Analytics } from '@customerio/cdp-analytics-node'
 
 type MerchantData = {
   id: string;
@@ -39,6 +40,18 @@ export default function HomePage() {
 
   const supabase = createClient();
 
+  const analytics = new Analytics({
+    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
+    host: 'https://cdp.customer.io',
+  })
+  
+  analytics.identify({
+    userId: userId!,
+    traits: {
+      name: name,
+      email: email,
+    }
+  });
 
   useEffect(() => {
     let isMounted = true;

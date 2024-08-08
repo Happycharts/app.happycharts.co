@@ -22,6 +22,7 @@ import { cn } from "@/app/utils/utils";
 import { Select, SelectItem, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectValue } from "@/components/ui/select";
 import { ChangeEvent } from 'react';
 import CurrencyInput from 'react-currency-input-field';
+import { Analytics } from '@customerio/cdp-analytics-node'
 
 type appData = {
   id: string;
@@ -70,6 +71,11 @@ export default function Apps() {
     apiVersion: '2023-08-16',
   });
 
+  const analytics = new Analytics({
+    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
+    host: 'https://cdp.customer.io',
+  })
+
   useEffect(() => {
     let isMounted = true;
     const fetchApps = async () => {
@@ -94,6 +100,16 @@ export default function Apps() {
     };
 
     fetchApps();
+    analytics.page({
+      userId: user?.id!,
+      category: 'Apps',
+      name: 'Apps Page View',
+      properties: {
+        url: 'https://app.happybase.co/apps',
+        path: '/apps',
+        title: 'Apps Page',
+      }
+    });
     
     
 
@@ -186,7 +202,17 @@ export default function Apps() {
         },
         body: JSON.stringify(portalData),
       });
-    
+      
+      analytics.track({
+        userId: user?.id!,
+        event: 'Portal Created',
+        properties: {
+          name: app.name,
+          url: app.url,
+          merchant: merchantData[0].id,
+        }
+      });
+      
 
       if (!broadcastResponse.ok) {
         console.error('Error creating portal:', broadcastResponse.status, broadcastResponse.statusText);
