@@ -91,6 +91,11 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL('/auth/create-organization', req.url));
     }
 
+    if (userId && orgId) {
+      console.log(`Redirecting to /home because user is authenticated and has an orgId`);
+      return NextResponse.redirect(new URL('/home', req.url));
+    }
+
     try {
       const organization = await clerkClient().organizations.getOrganization({ organizationId: orgId });
       const publicMetadata = organization.publicMetadata as { status?: string };
@@ -108,7 +113,6 @@ export default clerkMiddleware(async (auth, req) => {
   const response = NextResponse.next();
   return corsMiddleware(nextRequest, response);
 });
-
 
 export const config = {
   matcher: ['/((?!.*\\..*|_next|api/webhooks).*)', '/', '/(api|trpc)(.*)'],
