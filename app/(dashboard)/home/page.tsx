@@ -200,7 +200,7 @@ export default function HomePage() {
     </>
   );
 
-  const stripeConnectUrl = merchantData?.onboarding_link || `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_Qa1YXbHMD2SL28qGP1igjAmJyc3oeq6W&scope=read_write&redirect_uri=https://app.happybase.co/portals`;
+  const stripeConnectUrl = merchantData?.onboarding_link || `https://app.happybase.co/api/connect_links/refresh`;
 
   return (
     <div className="container mx-auto p-6 bg-white min-h-screen">
