@@ -79,37 +79,34 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (!isPublicRoute(req)) {
-    const { userId } = auth();
+    const { userId, orgId } = auth();
 
     if (!userId) {
       console.log(`Redirecting to /auth/login because user is not authenticated`);
       return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
+    if (!orgId) {
+      console.log(`Redirecting to /auth/create-organization because no orgId found`);
+      return NextResponse.redirect(new URL('/auth/create-organization', req.url));
+    }
+
+    if (userId && orgId) {
+      console.log(`Redirecting to /home because user is authenticated and has an orgId`);
+      return NextResponse.redirect(new URL('/home', req.url));
+    }
+
     try {
-      const userId = auth().userId;
-      const orgId = auth().orgId;
-
-      if (orgId) {
-        try {
-          const organization = await clerkClient().organizations.getOrganization({ organizationId: orgId });
-          const publicMetadata = organization.publicMetadata as { status?: string };
+      const organization = await clerkClient().organizations.getOrganization({ organizationId: orgId });
+      const publicMetadata = organization.publicMetadata as { status?: string };
       
-          if (publicMetadata.status === "suspended") {
-            console.log(`Redirecting to /suspended because organization is suspended`);
-            return NextResponse.redirect(new URL('/suspended', req.url));
-          }
-        } catch (error) {
-          console.log(`Redirecting to /auth/create-organization because organization is not found`);
-          return NextResponse.redirect(new URL('/auth/create-organization', req.url));
-        }
+      if (publicMetadata.status === "suspended") {
+        console.log(`Redirecting to /suspended because organization is suspended`);
+        return NextResponse.redirect(new URL('/suspended', req.url));
       }
-      
-
-      auth().protect();
     } catch (error) {
-      console.error('Error in middleware:', error);
-      return NextResponse.redirect(new URL('/error', req.url));
+      console.log(`Redirecting to /auth/create-organization because organization is not found`);
+      return NextResponse.redirect(new URL('/auth/create-organization', req.url));
     }
   }
 
