@@ -23,6 +23,12 @@ import { cn } from "@/app/utils/utils";
 import { Select, SelectItem, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectValue } from "@/components/ui/select";
 import { ChangeEvent } from 'react';
 import CurrencyInput from 'react-currency-input-field';
+import { Analytics } from '@customerio/cdp-analytics-node'
+
+const analytics = new Analytics({
+  writeKey: '0d586efab7e897a49bda',
+  host: 'https://cdp.customer.io',
+})
 
 type appData = {
   id: string;
@@ -69,7 +75,6 @@ export default function Apps() {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
   });
-  const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
 
   useEffect(() => {
     let isMounted = true;
@@ -95,11 +100,18 @@ export default function Apps() {
     };
 
     fetchApps();
-    analytics.track('Viewed Apps', {
-      userId: user?.id,
-      organizationId: organization?.id,
-      fullName: fullName,
+    analytics.page({
+      userId: user?.id!,
+      category: 'Apps',
+      name: 'Apps Page View',
+      properties: {
+        url: 'https://app.happybase.co/apps',
+        path: '/apps',
+        title: 'Apps Page',
+      }
     });
+    
+    
 
     return () => {
       isMounted = false;
@@ -190,6 +202,17 @@ export default function Apps() {
         },
         body: JSON.stringify(portalData),
       });
+      
+      analytics.track({
+        userId: user?.id!,
+        event: 'Portal Created',
+        properties: {
+          name: app.name,
+          url: app.url,
+          merchant: merchantData[0].id,
+        }
+      });
+      
 
       if (!broadcastResponse.ok) {
         console.error('Error creating portal:', broadcastResponse.status, broadcastResponse.statusText);

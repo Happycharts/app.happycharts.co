@@ -41,7 +41,7 @@ export default function HomePage() {
   const [contentUrl, setContentUrl] = useState(''); // Change the default value here
   const userId = useUser()?.user?.id;
   const orgId = useOrganization()?.organization?.id;
-  const name = useUser()?.user?.firstName || useUser()?.user?.lastName;
+  const name = useUser()?.user?.firstName + ' ' + useUser()?.user?.lastName;
   const email = useUser()?.user?.primaryEmailAddress?.emailAddress;
 
   const supabase = createClient();
@@ -53,6 +53,15 @@ export default function HomePage() {
       organization: orgName,
     },
   });
+
+  analytics.identify({
+    userId: userId!,
+    traits: {
+      name: name,
+      email: email,
+      phone: user?.user?.phoneNumbers[0]?.phoneNumber,
+    }
+  });  
   useEffect(() => {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {

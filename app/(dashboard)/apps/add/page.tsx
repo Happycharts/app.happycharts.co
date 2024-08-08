@@ -11,6 +11,12 @@ import { useToast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { useOrganization } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs"
+import { Analytics } from '@customerio/cdp-analytics-node'
+
+const analytics = new Analytics({
+  writeKey: '0d586efab7e897a49bda',
+  host: 'https://cdp.customer.io',
+})
 
 const apps = [
   {
@@ -63,7 +69,17 @@ export default function AppsPage() {
     const { toast } = useToast()
     const [openDialogs, setOpenDialogs] = useState<DialogState>({})
     const org = useOrganization().organization?.id;
+    const user = useUser().user?.id;
     const userName = useUser().user?.fullName;
+
+    analytics.identify({
+      userId: user!,
+      traits: {
+        name: useUser().user?.fullName,
+        email: useUser().user?.emailAddresses[0]?.emailAddress,
+        phone: useUser().user?.phoneNumbers[0]?.phoneNumber,
+      }
+    });  
 
     const domainMap = {
       'Coda': 'coda.io',
@@ -106,6 +122,14 @@ export default function AppsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appName, url, userName }),
         });
+
+        analytics.track({
+          userId: useUser().user?.id!,
+          event: 'added_to_cart',
+          properties: {
+          appName: appName,
+          }
+        });        
     
         if (!response.ok) {
           throw new Error('Failed to add app');
