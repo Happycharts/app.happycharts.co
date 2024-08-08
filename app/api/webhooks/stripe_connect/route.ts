@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { clerkClient } from '@clerk/nextjs/server';
-import { Analytics } from '@segment/analytics-node'
 import { Resend } from 'resend';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -12,10 +11,6 @@ export async function POST(request: Request) {
   const sig = request.headers.get('stripe-signature');
   const body = await request.text();
 
-  const analytics = new Analytics({
-    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
-    host: 'https://cdp.customer.io',
-  })
 
   let event;
 
@@ -36,17 +31,7 @@ export async function POST(request: Request) {
   switch (event.type as Stripe.Event.Type) {
     case 'account.updated':
       account = event.data.object as Stripe.Account;
-      analytics.track(
-        {
-          userId: account.id,
-          event: 'Account Updated',
-          properties: {
-            email: account.email,
-            name: account.company,
-            createdAt: account.created,
-          },
-        }
-      )
+
       break;
 
     case 'balance.available':
@@ -55,34 +40,13 @@ export async function POST(request: Request) {
     case 'account.application.authorized':
       account = event.data.object as Stripe.Account;
       console.log('Application authorized!');
-      analytics.track(
-        {
-          userId: account.id,
-          event: 'Application Authorized',
-          properties: {
-            email: account.email,
-            name: account.company,
-            createdAt: account.created,
-          },
-        }
-      )
       break;
 
     case 'payment_intent.succeeded':
       console.log('PaymentIntent was successful!');
       account = event.data.object as Stripe.Account;
       // Handle successful payment intent
-      analytics.track(
-        {
-          userId: account.id,
-          event: 'Payment Intent Succeeded',
-          properties: {
-            email: account.email,
-            name: account.company,
-            createdAt: account.created,
-          },
-        }
-      )
+
       break;
 
     case 'payout.failed':
@@ -91,17 +55,6 @@ export async function POST(request: Request) {
       // Handle paid invoice
       account = event.data.object as Stripe.Account;
       // Handle successful payment intent
-      analytics.track(
-        {
-          userId: account.id,
-          event: 'Payment Intent Succeeded',
-          properties: {
-            email: account.email,
-            name: account.company,
-            createdAt: account.created,
-          },
-        }
-      )
       break;
 
     case 'account.application.deauthorized':
