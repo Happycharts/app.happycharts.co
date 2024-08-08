@@ -7,6 +7,7 @@ import { cn } from "@/app/utils/utils"
 import Logo from "@/public/happybase.svg"
 import { Shield, Zap, TrendingUp } from "lucide-react"
 import { ReactNode } from 'react';
+import Intercom from '@intercom/messenger-js-sdk';
 
 export const metadata: Metadata = {
   title: "Authentication",
@@ -20,6 +21,9 @@ interface FeatureItemProps {
 }
 
 export default function AuthenticationPage() {
+  Intercom({
+    app_id: 'kz8t3t7h',
+  });
   return (
     <div className="container bg-black relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">

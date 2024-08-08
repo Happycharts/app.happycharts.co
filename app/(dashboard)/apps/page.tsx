@@ -67,13 +67,13 @@ export default function Apps() {
     const saved = localStorage.getItem('broadcastedApps');
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
   });
 
   const analytics = new Analytics({
-    writeKey: '0d586efab7e897a49bda',
+    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
     host: 'https://cdp.customer.io',
   })
 

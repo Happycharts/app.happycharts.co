@@ -7,9 +7,9 @@ import { cn } from "@/app/utils/utils"
 import Logo from "@/public/happybase.svg"
 import { Shield, Zap, TrendingUp, CheckCircle, RefreshCw } from "lucide-react"
 import { ReactNode, useState } from 'react';
-import { AnalyticsBrowser } from '@segment/analytics-next'
 import { Button } from "@/components/ui/button" // Assuming you have a Button component
 import { useRouter } from 'next/navigation';
+import { Analytics } from '@customerio/cdp-analytics-node'
 
 export const metadata: Metadata = {
   title: "Connec Refresh Page",
@@ -22,11 +22,13 @@ interface FeatureItemProps {
   description: string;
 }
 
-const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY! });
-
 export default function RefreshPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const analytics = new Analytics({
+    writeKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY!,
+    host: 'https://cdp.customer.io',
+  })
 
   const handleRefresh = async () => {
     setIsLoading(true);
