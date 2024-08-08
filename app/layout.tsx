@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider, useAuth, useUser, useOrganization } from '@clerk/nextjs'
 import { Theme } from '@radix-ui/themes';
+import { JitsuProvider } from "@jitsu/jitsu-react";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <JitsuProvider options={{ host: "https://cdp.happybase.co" }} >
     <ClerkProvider afterSignOutUrl={"https://www.happybase.co"} appearance={{
       elements: {
         footer: "hidden",
@@ -29,6 +31,7 @@ export default function RootLayout({
       </body>
     </html>
     </ClerkProvider>
+    </JitsuProvider>
   );
 }
   
