@@ -10,6 +10,12 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { useClerk } from "@clerk/nextjs";
 import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
+import { Analytics } from '@customerio/cdp-analytics-node'
+
+const analytics = new Analytics({
+  writeKey: '0d586efab7e897a49bda',
+  host: 'https://cdp.customer.io',
+})
 
 type MerchantData = {
   id: string;
@@ -39,8 +45,14 @@ export default function HomePage() {
   const email = useUser()?.user?.primaryEmailAddress?.emailAddress;
 
   const supabase = createClient();
-  const analytics = AnalyticsBrowser.load({ writeKey: process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY || '' });
 
+  analytics.page({
+    userId: userId!,
+    properties: {
+      page: 'Home',
+      organization: orgName,
+    },
+  });
   useEffect(() => {
     let isMounted = true;
     const fetchDataAndCheckAdmin = async () => {
@@ -102,7 +114,15 @@ export default function HomePage() {
           setIsStripeConnected(!!existingMerchant.onboarding_link);
         }
       }
-  
+
+      
+    analytics.track({
+      userId: userId!,
+      event: 'Merchant Onboarding Started',
+      properties: {
+        name: user.user?.firstName,
+      }
+    });
       setIsLoading(false);
     };
   
@@ -131,7 +151,17 @@ export default function HomePage() {
       interval: productInterval,
       private_url: contentUrl,
     };
-  
+
+    analytics.track({
+      userId: userId!,
+      event: 'Product Created',
+      properties: {
+        product: productName,
+        revenue: productPrice,
+        qty: 1
+      }
+    });
+    
     console.log('Sending product data:', productData);
   
     try {
