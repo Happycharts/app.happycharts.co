@@ -63,7 +63,6 @@ export default function AppsPage() {
     const { toast } = useToast()
     const [openDialogs, setOpenDialogs] = useState<DialogState>({})
     const org = useOrganization().organization?.id;
-    const user = useUser().user?.id;
     const userName = useUser().user?.fullName;
 
     const domainMap = {
@@ -106,7 +105,7 @@ export default function AppsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appName, url, userName }),
-        });       
+        });
     
         if (!response.ok) {
           throw new Error('Failed to add app');
