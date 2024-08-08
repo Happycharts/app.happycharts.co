@@ -12,6 +12,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
+  if (!orgId) {
+    return NextResponse.json({ message: 'You need to add an organization!' }, { status: 401 });
+  }
+
   try {
     const { data, error } = await supabase
       .from('apps')
