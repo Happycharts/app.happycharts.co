@@ -7,7 +7,6 @@ import { cn } from "@/app/utils/utils"
 import Logo from "@/public/happybase.svg"
 import { Shield, Zap, TrendingUp } from "lucide-react"
 import { ReactNode } from 'react';
-import { AnalyticsBrowser } from '@segment/analytics-next'
 
 export const metadata: Metadata = {
   title: "Authentication",

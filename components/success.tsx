@@ -7,7 +7,6 @@ import { cn } from "@/app/utils/utils"
 import Logo from "@/public/happybase.svg"
 import { Shield, Zap, TrendingUp, CheckCircle } from "lucide-react"
 import { ReactNode } from 'react';
-import { AnalyticsBrowser } from '@segment/analytics-next'
 import { Button } from "@/components/ui/button" // Assuming you have a Button component
 
 export const metadata: Metadata = {
