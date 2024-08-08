@@ -25,11 +25,6 @@ import { ChangeEvent } from 'react';
 import CurrencyInput from 'react-currency-input-field';
 import { Analytics } from '@customerio/cdp-analytics-node'
 
-const analytics = new Analytics({
-  writeKey: '0d586efab7e897a49bda',
-  host: 'https://cdp.customer.io',
-})
-
 type appData = {
   id: string;
   creator_id: string;
@@ -72,9 +67,15 @@ export default function Apps() {
     const saved = localStorage.getItem('broadcastedApps');
     return saved ? JSON.parse(saved) : [];
   });
+  
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2023-08-16',
   });
+
+  const analytics = new Analytics({
+    writeKey: '0d586efab7e897a49bda',
+    host: 'https://cdp.customer.io',
+  })
 
   useEffect(() => {
     let isMounted = true;

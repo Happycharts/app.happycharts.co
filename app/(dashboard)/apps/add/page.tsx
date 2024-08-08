@@ -13,11 +13,6 @@ import { useOrganization } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs"
 import { Analytics } from '@customerio/cdp-analytics-node'
 
-const analytics = new Analytics({
-  writeKey: '0d586efab7e897a49bda',
-  host: 'https://cdp.customer.io',
-})
-
 const apps = [
   {
     name: "Coda",
@@ -72,6 +67,11 @@ export default function AppsPage() {
     const user = useUser().user?.id;
     const userName = useUser().user?.fullName;
 
+    const analytics = new Analytics({
+      writeKey: '0d586efab7e897a49bda',
+      host: 'https://cdp.customer.io',
+    })
+
     analytics.identify({
       userId: user!,
       traits: {
@@ -121,15 +121,7 @@ export default function AppsPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appName, url, userName }),
-        });
-
-        analytics.track({
-          userId: useUser().user?.id!,
-          event: 'added_to_cart',
-          properties: {
-          appName: appName,
-          }
-        });        
+        });       
     
         if (!response.ok) {
           throw new Error('Failed to add app');
@@ -139,6 +131,14 @@ export default function AppsPage() {
           title: 'App Added',
           description: `${appName} has been added successfully.`,
         });
+
+        analytics.track({
+          userId: useUser().user?.id!,
+          event: 'added_to_cart',
+          properties: {
+          appName: appName,
+          }
+        }); 
     
         setOpenDialogs(prev => ({ ...prev, [appName]: false }));
       } catch (error) {

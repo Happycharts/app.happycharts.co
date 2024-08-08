@@ -12,11 +12,6 @@ import { Input } from '@/components/ui/input';
 import CurrencyInput from 'react-currency-input-field';
 import { Analytics } from '@customerio/cdp-analytics-node'
 
-const analytics = new Analytics({
-  writeKey: '0d586efab7e897a49bda',
-  host: 'https://cdp.customer.io',
-})
-
 type MerchantData = {
   id: string;
   organization: string;
@@ -43,6 +38,11 @@ export default function HomePage() {
   const orgId = useOrganization()?.organization?.id;
   const name = useUser()?.user?.firstName + ' ' + useUser()?.user?.lastName;
   const email = useUser()?.user?.primaryEmailAddress?.emailAddress;
+
+  const analytics = new Analytics({
+    writeKey: '0d586efab7e897a49bda',
+    host: 'https://cdp.customer.io',
+  })
 
   const supabase = createClient();
 

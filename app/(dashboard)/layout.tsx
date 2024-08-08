@@ -12,8 +12,8 @@ import { Menu } from "@/components/sidebar/menu"
 import { useSidebarToggle } from "@/app/hooks/use-sidebar-toggle"
 import { SidebarToggle } from "@/components/sidebar/sidebar-toggle"
 import Logo from "@/public/happybase.svg"
-import Intercom from '@intercom/messenger-js-sdk';
 import { useUser, useOrganization } from "@clerk/nextjs"
+import Intercom from '@intercom/messenger-js-sdk';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", weight: ["400", "700"] })
 
@@ -24,6 +24,10 @@ export default function RootLayout({
 }>) {
   const user = useUser();
   const org = useOrganization();
+  const userId = useUser().user?.id;
+  const userName = useUser().user?.firstName + " " + useUser().user?.lastName;
+  const userEmail = useUser().user?.emailAddresses[0].emailAddress;
+  const userCreatedAt = useUser().user?.createdAt;
   // Intercom({
   //   app_id: 'kz8t3t7h',
   //   user_id: user.user?.id, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
@@ -31,6 +35,13 @@ export default function RootLayout({
   //   email: user.user?.id, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email
   // });
   const sidebar = useStore(useSidebarToggle, (state) => state);
+  Intercom({
+    app_id: 'kz8t3t7h',
+    user_id: userId,
+    name: userName,
+    email: userEmail,
+    created_at: userCreatedAt ? Math.floor(userCreatedAt.getTime() / 1000) : undefined,
+  });
 
   if(!sidebar) return null;
 
