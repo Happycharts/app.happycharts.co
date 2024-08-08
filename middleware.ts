@@ -75,9 +75,15 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (!isAllowedRoute) {
     console.log(`Redirecting to /home because ${pathname} is not an allowed route`);
-    return NextResponse.redirect(new URL('/home', nextRequest.url));
+     const redirectUrl = new URL('/home', nextRequest.url);
+     if (redirectUrl.pathname !== nextRequest.nextUrl.pathname) {
+       return NextResponse.redirect(redirectUrl);
+     } else {
+       console.log(`Redirect to /home would cause an infinite loop, proceeding with request`);
+       return NextResponse.next();
+     }
   }
-
+  
   if (!isPublicRoute(req)) {
     const { userId, orgId } = auth();
 
@@ -92,8 +98,8 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     if (userId && orgId) {
-      console.log(`Redirecting to /home because user is authenticated and has an orgId`);
-      return NextResponse.redirect(new URL('/home', req.url));
+      console.log(`User is authenticated and has an orgId, proceeding with request`);
+      return NextResponse.next();
     }
 
     try {
