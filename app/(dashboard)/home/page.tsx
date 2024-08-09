@@ -105,6 +105,48 @@ export default function HomePage() {
         }
       }
 
+      if (!existingMerchant) {
+        // If no merchant exists and user is admin, create one
+        if (adminStatus) {
+          try {
+            console.log('Calling /api/connect_links/generate');
+            const response = await fetch('/api/connect_links/generate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                first_name: user.user?.firstName,
+                last_name: user.user?.lastName,
+                email: user.user?.primaryEmailAddress?.emailAddress,
+                organization: organization.id,
+                created_by: user.user?.id,
+              }),
+            });
+    
+            console.log('API response status:', response.status);
+            
+            if (response.ok) {
+              const data = await response.json();
+              console.log('API response data:', data);
+              if (isMounted) {
+                setMerchantData({
+                  id: data.id,
+                  organization: organization.id,
+                  onboarding_link: data.url,
+                });
+                setIsStripeConnected(true);
+              }
+            } else {
+              const errorData = await response.text();
+              console.error('Error creating merchant. Status:', response.status, 'Data:', errorData);
+            }
+          } catch (error) {
+            console.error('Error calling API:', error);
+          }
+        }
+      }
+
 
       setIsLoading(false);
     };
