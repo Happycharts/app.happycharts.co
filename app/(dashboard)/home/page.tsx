@@ -42,127 +42,82 @@ export default function HomePage() {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchDataAndCheckAdmin = async () => {
+    const fetchOrCreateMerchantData = async () => {
+      console.log('fetchOrCreateMerchantData called', { userId: user?.user?.id, orgId: organization?.id });
       if (!user?.user?.id || !organization?.id) return;
       setIsLoading(true);
-  
-      const adminStatus = checkIfUserIsAdmin();
-      if (isMounted) {
-        setIsAdmin(adminStatus);
-      }
+
       const { analytics } = useJitsu()
-  
+
       analytics.page()
       analytics.identify(userId)
+
+      console.log('Fetching existing merchant data');
       // Fetch existing merchant data
       const { data: existingMerchant, error: merchantError } = await supabase
         .from('merchants')
         .select('*')
         .eq('organization', organization.id)
         .single();
-  
+
       if (merchantError && merchantError.code !== 'PGRST116') {
         console.error("Error fetching merchant data:", merchantError);
       } else if (!existingMerchant) {
-        // If no merchant exists and user is admin, create one
-        if (adminStatus) {
-          try {
-            const response = await fetch('/api/connect_links/generate', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                first_name: user.user?.firstName,
-                last_name: user.user?.lastName,
-                email: user.user?.primaryEmailAddress?.emailAddress,
+        console.log('No existing merchant found. Creating new merchant.');
+        try {
+          console.log('Calling /api/connect_links/generate');
+          const response = await fetch('/api/connect_links/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              first_name: user.user?.firstName,
+              last_name: user.user?.lastName,
+              email: user.user?.primaryEmailAddress?.emailAddress,
+              organization: organization.id,
+              created_by: user.user?.id,
+            }),
+          });
+
+          console.log('API response status:', response.status);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('API response data:', data);
+            if (isMounted) {
+              setMerchantData({
+                id: data.id,
                 organization: organization.id,
-                created_by: user.user?.id,
-              }),
-            });
-  
-            if (response.ok) {
-              const data = await response.json();
-              if (isMounted) {
-                setMerchantData({
-                  id: data.id,
-                  organization: organization.id,
-                  onboarding_link: data.url,
-                });
-                setIsStripeConnected(true);
-              }
-            } else {
-              console.error('Error creating merchant:', await response.json());
+                onboarding_link: data.url,
+              });
+              setIsStripeConnected(true);
             }
-          } catch (error) {
-            console.error('Error creating merchant:', error);
+          } else {
+            const errorData = await response.text();
+            console.error('Error creating merchant. Status:', response.status, 'Data:', errorData);
           }
+        } catch (error) {
+          console.error('Error calling API:', error);
         }
       } else if (existingMerchant) {
+        console.log('Existing merchant found:', existingMerchant);
         if (isMounted) {
           setMerchantData(existingMerchant);
           setIsStripeConnected(!!existingMerchant.onboarding_link);
         }
       }
 
-      if (!existingMerchant) {
-        // If no merchant exists and user is admin, create one
-        if (adminStatus) {
-          try {
-            console.log('Calling /api/connect_links/generate');
-            const response = await fetch('/api/connect_links/generate', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                first_name: user.user?.firstName,
-                last_name: user.user?.lastName,
-                email: user.user?.primaryEmailAddress?.emailAddress,
-                organization: organization.id,
-                created_by: user.user?.id,
-              }),
-            });
-    
-            console.log('API response status:', response.status);
-            
-            if (response.ok) {
-              const data = await response.json();
-              console.log('API response data:', data);
-              if (isMounted) {
-                setMerchantData({
-                  id: data.id,
-                  organization: organization.id,
-                  onboarding_link: data.url,
-                });
-                setIsStripeConnected(true);
-              }
-            } else {
-              const errorData = await response.text();
-              console.error('Error creating merchant. Status:', response.status, 'Data:', errorData);
-            }
-          } catch (error) {
-            console.error('Error calling API:', error);
-          }
-        }
-      }
-
-
       setIsLoading(false);
     };
+
   
-    fetchDataAndCheckAdmin();
+    fetchOrCreateMerchantData();
   
     return () => {
       isMounted = false;
     };
   }, [user?.user?.id, organization?.id, membership]);
-
-  function checkIfUserIsAdmin(): boolean {
-    if (!membership) return false;
-    console.log("User role:", membership.role);
-    return membership.role === 'org:admin' || membership.role === 'admin';
-  }
 
   const handleProductSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -273,24 +228,17 @@ export default function HomePage() {
               <li className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold text-black mb-3">2. Connect with Stripe</h3>
                 <p className="text-black mb-4">Connect a Stripe account so you can start setting rates for your creations</p>
-                {isAdmin ? (
-                  <Link href={merchantData?.onboarding_link || '#'}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center space-x-2"
-                      disabled={!merchantData?.onboarding_link}
-                    >
-                      <img src="https://cdn.iconscout.com/icon/free/png-256/free-stripe-s-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-brand-vol-6-pack-logos-icons-3030363.png" className="h-4 w-4" />
-                      <span>{merchantData?.onboarding_link ? 'Complete Stripe Onboarding' : 'Loading...'}</span>
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button variant="outline" size="sm" disabled className="flex items-center space-x-2">
+                <Link href={merchantData?.onboarding_link || '#'}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center space-x-2"
+                    disabled={!merchantData?.onboarding_link}
+                  >
                     <img src="https://cdn.iconscout.com/icon/free/png-256/free-stripe-s-logo-icon-download-in-svg-png-gif-file-formats--technology-social-media-company-brand-vol-6-pack-logos-icons-3030363.png" className="h-4 w-4" />
-                    <span>Connect with Stripe</span>
+                    <span>{merchantData?.onboarding_link ? 'Complete Stripe Onboarding' : 'Loading...'}</span>
                   </Button>
-                )}
+                </Link>
               </li>
                 <li className="bg-gray-50 p-6 rounded-lg">
                   <h3 className="text-xl font-semibold text-black mb-3">3. Create a portal</h3>
