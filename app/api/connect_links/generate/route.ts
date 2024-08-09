@@ -27,15 +27,6 @@ export async function POST(req: NextRequest) {
     const supabase = createClient();
     console.log('Supabase client created');
 
-    // Test Supabase connection
-    const { data: testData, error: testError } = await supabase.from('merchants').select('count');
-    if (testError) {
-      console.error('Supabase connection test failed:', testError);
-      return NextResponse.json({ error: 'Database connection error' }, { status: 500 });
-    } else {
-      console.log('Supabase connection test successful');
-    }
-
     // Get the user's email
     console.log('Fetching user email from Clerk');
     const user = await clerkClient().users.getUser(userId);
